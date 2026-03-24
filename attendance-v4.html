@@ -389,13 +389,54 @@ select.input{cursor:pointer;}
 /* FOOTER */
 .footer{text-align:center;padding:16px;font-size:0.67rem;color:var(--text3);font-family:var(--mono);border-top:1px solid var(--border);margin-top:40px;}
 
+/* ══ MOBILE NAV ══════════════════════════════════ */
 @media(max-width:600px){
-  .topbar{padding:0 12px;}
-  .brand{margin-right:12px;font-size:0.82rem;}
-  .nt{padding:0 10px;font-size:0.73rem;}
-  .page{padding:16px 12px;}
+  /* Topbar: brand + user only, no nav */
+  .topbar{padding:0 12px;flex-wrap:nowrap;}
+  .brand{margin-right:auto;font-size:0.82rem;}
+  .nav-tabs{display:none;}  /* hide inline nav on mobile */
+
+  /* Floating bottom nav bar */
+  .mobile-nav{
+    display:flex;
+    position:fixed;
+    bottom:0;left:0;right:0;
+    background:var(--surface);
+    border-top:1px solid var(--border);
+    overflow-x:auto;
+    overflow-y:hidden;
+    -webkit-overflow-scrolling:touch;
+    scroll-snap-type:x mandatory;
+    z-index:300;
+    padding-bottom:env(safe-area-inset-bottom);
+    scrollbar-width:none;
+  }
+  .mobile-nav::-webkit-scrollbar{display:none;}
+  .mn-item{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    min-width:64px;padding:6px 4px 5px;
+    font-size:0.58rem;font-weight:500;color:var(--text3);
+    cursor:pointer;white-space:nowrap;gap:3px;
+    scroll-snap-align:start;
+    border-top:2px solid transparent;
+    transition:color 0.15s;
+    flex-shrink:0;
+  }
+  .mn-item .mn-icon{font-size:1.2rem;line-height:1;}
+  .mn-item.active{color:var(--accent);border-top-color:var(--accent);}
+  .mn-item:hover{color:var(--text2);}
+
+  /* Push page content above bottom nav */
+  .page{padding:16px 12px 80px;}
+  #appPage > .alert-banner{padding:7px 12px;}
+
+  /* General mobile fixes */
   .student-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
+}
+/* On desktop: hide mobile nav */
+@media(min-width:601px){
+  .mobile-nav{display:none;}
 }
 </style>
 </head>
@@ -456,6 +497,38 @@ select.input{cursor:pointer;}
       <div class="icon-btn" title="Logout" onclick="doLogout()">⏻</div>
     </div>
   </div>
+
+
+  <!-- ══ MOBILE BOTTOM NAV ══ -->
+  <nav class="mobile-nav" id="mobileNav">
+    <div class="mn-item active" onclick="showPage('schedule')" id="mn-schedule">
+      <span class="mn-icon">📅</span><span>Schedule</span>
+    </div>
+    <div class="mn-item" onclick="showPage('attendance')" id="mn-attendance">
+      <span class="mn-icon">✋</span><span>Attendance</span>
+    </div>
+    <div class="mn-item" onclick="showPage('reports')" id="mn-reports">
+      <span class="mn-icon">📋</span><span>Reports</span>
+    </div>
+    <div class="mn-item" onclick="showPage('students')" id="mn-students">
+      <span class="mn-icon">👤</span><span>Students</span>
+    </div>
+    <div class="mn-item" onclick="showPage('staff')" id="mn-staff">
+      <span class="mn-icon">👥</span><span>Staff</span>
+    </div>
+    <div class="mn-item" onclick="showPage('setup')" id="mn-setup">
+      <span class="mn-icon">⚙️</span><span>Setup</span>
+    </div>
+    <div class="mn-item" onclick="showPage('help')" id="mn-help">
+      <span class="mn-icon">❓</span><span>Help</span>
+    </div>
+    <div class="mn-item" onclick="showPage('analytics')" id="mn-analytics" style="display:none;">
+      <span class="mn-icon">📊</span><span>Analytics</span>
+    </div>
+    <div class="mn-item" onclick="openAdmin()" id="mn-admin" style="display:none;color:var(--purple);">
+      <span class="mn-icon">🔐</span><span>Admin</span>
+    </div>
+  </nav>
 
   <!-- ══ SCHEDULE PAGE ══ -->
   <div class="page active" id="page-schedule">
@@ -2217,6 +2290,8 @@ function doLogin() {
   const tabAnalytics = document.getElementById('tab-analytics');
   const tabAdmin = document.getElementById('tab-admin');
   const tabStudents = document.getElementById('tab-students');
+  const mnAnalytics = document.getElementById('mn-analytics');
+  const mnAdmin = document.getElementById('mn-admin');
 
   if (isAdmin()) {
     badge.textContent = 'ADMIN';
@@ -2226,6 +2301,8 @@ function doLogin() {
     badge.style.borderColor = 'rgba(168,85,247,0.3)';
     tabAnalytics.style.display = 'flex';
     tabAdmin.style.display = 'flex';
+    if (mnAnalytics) mnAnalytics.style.display = 'flex';
+    if (mnAdmin) mnAdmin.style.display = 'flex';
   } else if (isTeamLead()) {
     badge.textContent = 'TEAM LEAD';
     badge.style.display = 'inline-flex';
@@ -2234,10 +2311,14 @@ function doLogin() {
     badge.style.borderColor = 'rgba(6,182,212,0.3)';
     tabAnalytics.style.display = 'none';
     tabAdmin.style.display = 'none';
+    if (mnAnalytics) mnAnalytics.style.display = 'none';
+    if (mnAdmin) mnAdmin.style.display = 'none';
   } else {
     badge.style.display = 'none';
     tabAnalytics.style.display = 'none';
     tabAdmin.style.display = 'none';
+    if (mnAnalytics) mnAnalytics.style.display = 'none';
+    if (mnAdmin) mnAdmin.style.display = 'none';
   }
   if (tabStudents) tabStudents.style.display = 'flex';
   initApp();
@@ -2261,9 +2342,12 @@ function doLogout() {
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.mn-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   const tab = document.getElementById('tab-'+id);
   if (tab) tab.classList.add('active');
+  const mn = document.getElementById('mn-'+id);
+  if (mn) mn.classList.add('active');
   if (id==='schedule')   renderSched();
   if (id==='attendance') renderPicker();
   if (id==='reports')    renderReports();
