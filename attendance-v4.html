@@ -73,7 +73,7 @@ body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:1
 
 /* PAGES */
 .page{display:none;max-width:1000px;margin:0 auto;padding:24px 16px;}
-.page.active{display:block;}
+.page.active{display:block;min-height:calc(100vh - 110px);}
 
 /* CARDS */
 .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:16px;}
@@ -247,9 +247,10 @@ select.input{cursor:pointer;}
 @media(max-width:640px){.rpt-grid{grid-template-columns:1fr;}}
 .rpt-sidebar{background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px;height:fit-content;}
 .rpt-sidebar h3{font-size:0.72rem;font-weight:600;color:var(--text3);margin-bottom:10px;text-transform:uppercase;letter-spacing:0.5px;}
-.rcb{display:block;width:100%;padding:8px 10px;border-radius:var(--r);font-size:0.8rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;margin-bottom:3px;text-align:left;border:1px solid transparent;background:transparent;font-family:var(--sans);}
+.rcb{display:block;width:100%;padding:7px 10px 7px 20px;border-radius:var(--r);font-size:0.8rem;font-weight:500;color:var(--text2);cursor:pointer;transition:all 0.15s;margin-bottom:2px;text-align:left;border:1px solid transparent;background:transparent;font-family:var(--sans);}
 .rcb:hover{background:var(--surface2);}
 .rcb.active{background:var(--accent-glow);color:var(--accent);border-color:rgba(59,130,246,0.25);}
+.rpt-group-row:hover{background:var(--surface3) !important;}
 
 .rpt-types{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;}
 @media(max-width:480px){.rpt-types{grid-template-columns:1fr;}}
@@ -449,6 +450,7 @@ select.input{cursor:pointer;}
   /* Add bottom padding so content isn't hidden behind mobile nav */
   #appPage{padding-bottom:58px;}
   .page{padding:16px 12px;}
+  .page.active{min-height:calc(100vh - 168px);}
   .student-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
   /* Group selector compacter on mobile */
@@ -505,7 +507,6 @@ select.input{cursor:pointer;}
       <div class="nt" onclick="showPage('reports')" id="tab-reports" data-tour="tab-reports">📋 Reports</div>
       <div class="nt" onclick="showPage('analytics')" id="tab-analytics" data-tour="tab-analytics" style="display:none;">📊 Analytics</div>
       <div class="nt" onclick="showPage('students')" id="tab-students" data-tour="tab-students">👤 Students</div>
-      <div class="nt" onclick="showPage('staff')" id="tab-staff" data-tour="tab-staff">👥 Staff</div>
       <div class="nt" onclick="showPage('setup')" id="tab-setup" data-tour="tab-setup">⚙️ Setup</div>
       <div class="nt" onclick="showPage('help')" id="tab-help">❓ Help</div>
       <div class="nt" onclick="openAdmin()" id="tab-admin" style="display:none;color:var(--purple);">🔐 Admin</div>
@@ -538,10 +539,6 @@ select.input{cursor:pointer;}
       <div class="mn-item" id="mn-students" onclick="showPage('students')">
         <span class="mn-icon">👤</span>
         <span class="mn-label">Students</span>
-      </div>
-      <div class="mn-item" id="mn-staff" onclick="showPage('staff')">
-        <span class="mn-icon">👥</span>
-        <span class="mn-label">Staff</span>
       </div>
       <div class="mn-item" id="mn-analytics" style="display:none;" onclick="showPage('analytics')">
         <span class="mn-icon">📊</span>
@@ -598,10 +595,6 @@ select.input{cursor:pointer;}
   <!-- ══ ATTENDANCE PAGE ══ -->
   <div class="page" id="page-attendance">
     <!-- Team View Banner for Attendance -->
-    <div id="teamViewBannerAttendance" style="display:none;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:var(--r);padding:10px 16px;margin-bottom:12px;align-items:center;gap:12px;">
-      <span style="font-size:0.82rem;color:var(--cyan);">👁 Viewing: <strong id="teamViewLabelAttendance">—</strong></span>
-      <button class="btn" style="margin-left:auto;font-size:0.73rem;padding:3px 10px;background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:var(--cyan);" onclick="setViewingUser(null)">✕ Return to my data</button>
-    </div>
     <div id="courseSelector">
       <div class="card">
         <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
@@ -611,11 +604,6 @@ select.input{cursor:pointer;}
               <span class="tt-box">Choose the course you want to take attendance for. You can also click directly from the Schedule page.</span>
             </span>
           </span>
-          <div id="teamViewBtnWrapAtt" style="display:none;">
-            <button id="teamViewOpenBtnAtt" class="btn" style="background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:var(--cyan);font-size:0.73rem;" onclick="openTeamView()">
-              👁 View Team
-            </button>
-          </div>
         </div>
         <div id="coursePickGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;"></div>
         <div class="empty" id="coursePickEmpty" style="display:none">No courses configured. Go to Setup first.</div>
@@ -872,21 +860,9 @@ select.input{cursor:pointer;}
 
   <!-- ══ REPORTS PAGE ══ -->
   <div class="page" id="page-reports">
-    <!-- Team View banner -->
-    <div id="teamViewBannerReports" style="display:none;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:var(--r);padding:10px 16px;margin-bottom:16px;align-items:center;gap:12px;">
-      <span style="font-size:0.82rem;color:var(--cyan);">👁 Viewing: <strong id="teamViewLabelReports">—</strong></span>
-      <span style="font-size:0.75rem;color:var(--text3);">Read-only view</span>
-      <button class="btn btn-ghost" style="margin-right:auto;padding:4px 10px;font-size:0.75rem;" onclick="setViewingUser(null)">← Back to My Data</button>
-      <button class="btn" style="padding:4px 10px;font-size:0.75rem;background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:var(--cyan);" onclick="openTeamView()">Switch User</button>
-    </div>
     <div class="rpt-grid">
       <div class="rpt-sidebar">
-        <h3>Courses</h3>
-        <div id="rptCourseList"><div class="empty" style="padding:10px;font-size:0.77rem;">No courses yet</div></div>
-        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border);">
-          <h3 style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Colleagues</h3>
-          <div id="rptColleagueList"><div class="empty" style="padding:6px;font-size:0.75rem;">Only you so far</div></div>
-        </div>
+        <div id="rptCourseList"><div class="empty" style="padding:10px;font-size:0.77rem;">No groups yet</div></div>
       </div>
       <div>
         <div class="rpt-types">
@@ -923,17 +899,6 @@ select.input{cursor:pointer;}
       <div>
         <h2 style="font-size:0.95rem;font-weight:700;">👤 Students</h2>
         <p style="font-size:0.75rem;color:var(--text3);margin-top:3px;">Search students and view individual attendance records</p>
-      </div>
-      <!-- Team View button — visible to Team Lead + Admin only -->
-      <div id="teamViewBtnWrap" style="display:none;">
-        <div id="teamViewBannerStudents" style="display:none;align-items:center;gap:8px;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:var(--r);padding:7px 12px;">
-          <span style="font-size:0.78rem;color:var(--cyan);">👁 <strong id="teamViewLabelStudents">—</strong></span>
-          <button class="btn btn-ghost" style="padding:3px 8px;font-size:0.72rem;" onclick="setViewingUser(null)">← My Data</button>
-          <button class="btn" style="padding:3px 8px;font-size:0.72rem;background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:var(--cyan);" onclick="openTeamView()">Switch</button>
-        </div>
-        <button id="teamViewOpenBtn" class="btn" style="background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:var(--cyan);" onclick="openTeamView()">
-          👥 Team View
-        </button>
       </div>
     </div>
 
@@ -998,7 +963,6 @@ select.input{cursor:pointer;}
                 <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);text-align:left;">Date</th>
                 <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Course</th>
                 <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Status</th>
-                <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);" id="staffColHeader" style="display:none;">Staff</th>
               </tr>
             </thead>
             <tbody id="studentHistoryBody"><tr><td colspan="4" class="empty">No sessions recorded</td></tr></tbody>
@@ -1008,102 +972,6 @@ select.input{cursor:pointer;}
     </div>
   </div>
 
-  <!-- ══ STAFF PAGE ══ -->
-  <div class="page" id="page-staff">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
-      <div>
-        <h2 style="font-size:0.95rem;font-weight:700;">👥 Staff</h2>
-        <p style="font-size:0.75rem;color:var(--text3);margin-top:3px;">View staff structure and access course sheets</p>
-      </div>
-    </div>
-
-    <div style="display:grid;grid-template-columns:280px 1fr;gap:16px;" id="staffGrid">
-
-      <!-- Tree sidebar -->
-      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px;height:fit-content;position:sticky;top:68px;">
-        <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:12px;">Organization</div>
-        <div id="staffTree" style="display:flex;flex-direction:column;gap:2px;"></div>
-      </div>
-
-      <!-- Detail panel -->
-      <div id="staffDetailPanel">
-        <div class="card" style="text-align:center;padding:40px;" id="staffDetailEmpty">
-          <div style="font-size:2.5rem;margin-bottom:12px;">👆</div>
-          <div style="font-size:0.88rem;color:var(--text3);">Select a staff member from the tree to view their details</div>
-          <div style="font-size:0.75rem;color:var(--text3);margin-top:6px;">اختر موظفاً من الشجرة للاطلاع على بياناته</div>
-        </div>
-
-        <!-- Staff member detail -->
-        <div id="staffMemberDetail" style="display:none;">
-
-          <!-- Header -->
-          <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:18px 20px;margin-bottom:16px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-            <div id="staffMemberAvatar" style="width:44px;height:44px;border-radius:50%;background:var(--accent);display:flex;align-items:center;justify-content:center;font-size:1.1rem;font-weight:700;color:#fff;flex-shrink:0;"></div>
-            <div style="flex:1;">
-              <div style="font-size:1rem;font-weight:700;" id="staffMemberName">—</div>
-              <div style="font-size:0.75rem;color:var(--text3);margin-top:3px;font-family:var(--mono);" id="staffMemberMeta">—</div>
-            </div>
-            <span id="staffMemberRoleBadge" class="badge">—</span>
-          </div>
-
-          <!-- Courses & Sheets -->
-          <div class="card" style="margin-bottom:16px;">
-            <div class="card-title">📚 Courses & Sheets</div>
-            <div id="staffMemberCourses" style="display:flex;flex-direction:column;gap:8px;">
-              <div class="empty">No courses uploaded yet</div>
-            </div>
-          </div>
-
-          <!-- Sessions log — Admin only -->
-          <div class="card" id="staffSessionsCard" style="display:none;margin-bottom:16px;">
-            <div class="card-title">📋 Session Log
-              <span class="badge b-purple" style="font-size:0.65rem;">Admin Only</span>
-            </div>
-            <div style="overflow-x:auto;">
-              <table style="width:100%;border-collapse:collapse;font-size:0.78rem;">
-                <thead>
-                  <tr>
-                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Date</th>
-                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Course</th>
-                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Type</th>
-                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Students</th>
-                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Absent</th>
-                    <th style="padding:7px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Accuracy</th>
-                  </tr>
-                </thead>
-                <tbody id="staffSessionsBody"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <!-- Summary stats — Admin only -->
-          <div id="staffStatsCard" style="display:none;margin-bottom:16px;">
-            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
-              <div class="stat-card">
-                <div class="stat-num" id="staffStatSessions" style="color:var(--accent)">—</div>
-                <div class="stat-lbl">Sessions</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-num" id="staffStatAccuracy" style="color:var(--green)">—%</div>
-                <div class="stat-lbl">Avg Accuracy</div>
-              </div>
-              <div class="stat-card">
-                <div class="stat-num" id="staffStatNoShow" style="color:var(--red)">—</div>
-                <div class="stat-lbl">NO SHOW</div>
-              </div>
-            </div>
-          </div>
-
-          <!-- NO SHOW list — Team Lead (own team) + Admin -->
-          <div class="card" id="staffNoShowCard" style="display:none;margin-bottom:16px;">
-            <div class="card-title">🚨 NO SHOW Students</div>
-            <div id="staffNoShowList" style="display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;"></div>
-          </div>
-
-        </div>
-      </div>
-
-    </div>
   </div>
 
   <!-- ══ ANALYTICS PAGE ══ -->
@@ -1325,6 +1193,13 @@ select.input{cursor:pointer;}
         </div>
       </div>
 
+      <!-- Hidden controls required by addSched() / renderSchedCoursePicker() -->
+      <div style="display:none;" aria-hidden="true">
+        <select id="sbDay"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option></select>
+        <input type="time" id="sbTime" />
+        <select id="sbCourse"><option value="">— Select course —</option></select>
+      </div>
+
       <!-- Step 3: Upload Student Rosters -->
       <div class="setup-step" style="grid-column:1/-1;" id="tourStep3">
         <div class="step-hdr">
@@ -1352,30 +1227,7 @@ select.input{cursor:pointer;}
         </div>
       </div>
 
-      <!-- Step 4 placeholder for manual override -->
-      <div class="setup-step" style="grid-column:1/-1;display:none;" id="tourStep4">
-        <div class="step-hdr">
-          <div class="step-num" id="sn4">4</div>
-          <div><div class="step-title">Manual Schedule Override</div><div class="step-sub">Add or edit slots manually (optional)</div></div>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:8px;align-items:end;margin-bottom:12px;">
-          <div class="field" style="margin:0;"><label>Day</label>
-            <select class="input" id="sbDay">
-              <option value="0">Sunday</option><option value="1">Monday</option>
-              <option value="2">Tuesday</option><option value="3">Wednesday</option>
-              <option value="4">Thursday</option>
-            </select>
-          </div>
-          <div class="field" style="margin:0;"><label>Time</label><input class="input" type="time" id="sbTime" /></div>
-          <div class="field" style="margin:0;"><label>Course</label>
-            <select class="input" id="sbCourse"><option value="">— Select course —</option></select>
-          </div>
-          <div style="padding-top:18px;"><button class="btn btn-primary" onclick="addSched()">+ Add</button></div>
-        </div>
-        <div style="display:flex;flex-direction:column;gap:6px;" id="schedEntries">
-          <div class="empty" style="padding:10px;font-size:0.75rem;" id="schedEmpty">No schedule entries yet</div>
-        </div>
-      </div>
+
     </div>
   </div>
 
@@ -1995,26 +1847,6 @@ select.input{cursor:pointer;}
 </div>
 
 <!-- Team View modal -->
-<div class="overlay" id="teamViewOverlay">
-  <div class="modal" style="max-width:420px;">
-    <div class="modal-hdr">
-      <h2>👥 Team View</h2>
-      <button class="btn btn-ghost" onclick="closeTeamView()">✕ Close</button>
-    </div>
-    <div class="modal-body">
-      <p style="font-size:0.82rem;color:var(--text2);margin-bottom:16px;">
-        View another team member's data. You can browse their courses, reports, and students — but not edit anything.
-      </p>
-      <div style="font-size:0.72rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Select Team Member</div>
-      <div id="teamViewUserList" style="display:flex;flex-direction:column;gap:6px;"></div>
-      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
-        <button class="btn btn-ghost btn-full" onclick="setViewingUser(null)">
-          👤 Back to My Data
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- Report type modal -->
 <div class="overlay" id="reportModalOverlay">
@@ -2219,9 +2051,9 @@ function savePersonal(d, username) {
 
 // ── Cross-user data helpers ───────────────────────────────
 
-// Get courses — respects _viewingUser state + multi-group aware
+// Get courses — multi-group aware
 function loadAccessibleCourses(forceUser) {
-  const username = forceUser || _viewingUser || CU.username;
+  const username = forceUser || CU.username;
   const p = loadPersonal(username);
   const result = {};
   // جمع من كل المجموعات
@@ -2337,10 +2169,9 @@ function getCourse(key) {
 
 // ── Compatibility wrappers ─────────────────────────────────
 // load() returns merged view: shared users + personal data
-// If _viewingUser is set, loads that user's data (for Team View mode)
 function load() {
   const shared   = loadShared();
-  const personal = loadPersonal(_viewingUser || CU?.username);
+  const personal = loadPersonal(CU?.username);
   return { ...personal, users: shared.users };
 }
 
@@ -2361,7 +2192,8 @@ function save(d) {
     courses:     d.courses     || {},
     schedule:    d.schedule    || [],
     sessions:    d.sessions    || [],
-    tourDone:    d.tourDone    || false
+    tourDone:    d.tourDone    || false,
+    smartAlert:  d.smartAlert  || false
   };
   savePersonal(personal);
 }
@@ -2483,7 +2315,6 @@ function hasPerm(perm) {
 //  AUTH
 // ══════════════════════════════════════════════════════════
 let CU = null;
-let _viewingUser = null; // null = viewing own data, string = viewing another user's data
 const COLORS = ['#3b82f6','#22c55e','#ef4444','#eab308','#a855f7','#f97316','#06b6d4','#ec4899'];
 const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday'];
 
@@ -2537,7 +2368,6 @@ function doLogin() {
 
 function doLogout() {
   CU = null;
-  _viewingUser = null;
   _attMode = 'manual';
   stopTimer();
   document.getElementById('appPage').style.display = 'none';
@@ -2559,13 +2389,13 @@ function showPage(id) {
   if (tab) tab.classList.add('active');
   const mn = document.getElementById('mn-'+id);
   if (mn) mn.classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'instant' });
   if (id==='schedule')   renderSched();
   if (id==='attendance') renderPicker();
   if (id==='reports')    renderReports();
   if (id==='analytics')  renderAnalytics();
   if (id==='setup')      renderSetup();
   if (id==='students')   renderStudentsPage();
-  if (id==='staff')      renderStaffPage();
 }
 
 function initApp() {
@@ -2577,12 +2407,10 @@ function initApp() {
   renderPicker();
   renderReports();
   renderSetup();
-  updateTeamViewUI();
   initMobileNav();
   // Show analytics help section for admin only
   const helpAnalytics = document.getElementById('helpAnalyticsSection');
   if (helpAnalytics) helpAnalytics.style.display = isAdmin() ? 'block' : 'none';
-  // Staff page rendered on demand
   const d = load();
   if (!d.tourDone) setTimeout(startTour, 800);
 }
@@ -3190,7 +3018,8 @@ function parseSISRoster(text) {
 
 function renderRosterQueue() {
   const d = load();
-  const keys = Object.keys(d.courses);
+  const courses = getActiveCourses(d);
+  const keys = Object.keys(courses);
   const wrap = document.getElementById('rosterQueue');
   const list = document.getElementById('rosterQueueList');
   if (!_rosterQueue.length) { wrap.style.display='none'; return; }
@@ -3695,9 +3524,10 @@ function renderRosterTable() {
     body.innerHTML = c.students.map(s => {
       const sd = sess.studentDetails?.find(x => x.campusId === s.campusId);
       const status = sd?.status || 'Present';
-      // Total Absent: 1 if Absent/Escaped/Not Registered; 0 if Present or Excused
-      const isManualAbsent = status === 'Absent' || status === 'Escaped' || status === 'Not Registered';
-      const isElecAbsent   = status === 'Absent' || status === 'Escaped';
+      // Manual Absent: الطالب علّمه الموظف يدوياً غائباً (Absent أو Escaped فقط)
+      // Not Registered: غائب إلكترونياً فقط — لم يُسجَّل في التطبيق اليدوي
+      const isManualAbsent = status === 'Absent' || status === 'Escaped';
+      const isElecAbsent   = status === 'Absent' || status === 'Escaped' || status === 'Not Registered';
       const isTotalAbsent  = status === 'Absent' || status === 'Escaped' || status === 'Not Registered';
       const color = STATUS_COLOR[status] || 'var(--text3)';
       return `<tr>
@@ -3731,8 +3561,10 @@ function renderRosterTable() {
       sessions.forEach(sess => {
         const sd = sess.studentDetails?.find(x => x.campusId === s.campusId);
         if (!sd) return;
-        const isM = sd.status === 'Absent' || sd.status === 'Escaped' || sd.status === 'Not Registered';
-        const isE = sd.status === 'Absent' || sd.status === 'Escaped';
+        // Manual Absent: علّمه الموظف غائباً يدوياً (Absent أو Escaped فقط)
+        // Not Registered: غائب إلكترونياً فقط، لم يُسجَّل في الشبكة اليدوية
+        const isM = sd.status === 'Absent' || sd.status === 'Escaped';
+        const isE = sd.status === 'Absent' || sd.status === 'Escaped' || sd.status === 'Not Registered';
         // Total Absent: 1 per session if Absent/Escaped/Not Registered (Excused = 0)
         const isAbsent = sd.status === 'Absent' || sd.status === 'Escaped' || sd.status === 'Not Registered';
         if (isM) manAbs++;
@@ -4333,80 +4165,102 @@ function exportAttCSV() {
 // ══════════════════════════════════════════════════════════
 let rptCourse=null, rptType='attendance';
 
-function renderReports() {
-  const allCourses = loadAccessibleCourses();
-  const list = document.getElementById('rptCourseList');
-  const keys = Object.keys(allCourses);
+// ══════════════════════════════════════════════════════════
+//  REPORTS SIDEBAR — Groups > Courses tree
+// ══════════════════════════════════════════════════════════
+let _rptExpandedGroups = {}; // { "username::groupId": true/false }
 
-  if (!keys.length) {
-    list.innerHTML='<div class="empty" style="padding:10px;font-size:0.77rem;">No courses yet</div>';
+function renderReports() {
+  const list = document.getElementById('rptCourseList');
+
+  // جمع بيانات المستخدمين المتاحين حسب الصلاحية
+  const users = accessibleUsernames();
+  let html = '';
+  let hasAny = false;
+
+  users.forEach(uname => {
+    const p = loadPersonal(uname);
+    const groups = p.groups || {};
+    const gKeys = Object.keys(groups);
+    if (!gKeys.length) return;
+    hasAny = true;
+
+    // عنوان المستخدم — يظهر فقط للأدمن عندما يرى أكثر من مستخدم
+    if (users.length > 1) {
+      const isMe = uname === CU.username;
+      html += `<div style="font-size:0.65rem;font-weight:700;color:var(--text3);
+        text-transform:uppercase;letter-spacing:0.5px;
+        padding:6px 8px 3px;margin-top:6px;border-top:1px solid var(--border);">
+        ${isMe ? '👤 Me' : '👤 ' + uname}
+      </div>`;
+    }
+
+    // المجموعات
+    gKeys.forEach(gid => {
+      const g = groups[gid];
+      const cKeys = Object.keys(g.courses || {});
+      const expandKey = uname + '::' + gid;
+      const isExpanded = _rptExpandedGroups[expandKey] !== false; // افتراضياً مفتوح
+      const color = getGroupColorForUser(gid, uname);
+      const isGroupSelected = rptCourse === (uname + '::group::' + gid);
+
+      html += `<div class="rpt-group-row ${isGroupSelected?'active':''}"
+        onclick="toggleRptGroup('${expandKey}','${uname}','${gid}')"
+        style="display:flex;align-items:center;gap:7px;padding:7px 8px;
+          border-radius:var(--r);cursor:pointer;margin-bottom:2px;
+          background:${isGroupSelected?'var(--accent-glow)':'var(--surface2)'};
+          border:1px solid ${isGroupSelected?'rgba(59,130,246,0.3)':'transparent'};
+          transition:all 0.15s;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${color};flex-shrink:0;"></span>
+        <span style="flex:1;font-size:0.78rem;font-weight:600;">${gid}</span>
+        <span style="font-size:0.63rem;color:var(--text3);">${cKeys.length}</span>
+        <span style="font-size:0.65rem;color:var(--text3);transition:transform 0.2s;
+          transform:rotate(${isExpanded?'0':'−90'}deg);">▾</span>
+      </div>`;
+
+      if (isExpanded) {
+        cKeys.forEach(code => {
+          const course = g.courses[code];
+          const ck = uname === CU.username ? code + '::g::' + gid : uname + '::' + code;
+          const isActive = rptCourse === ck;
+          html += `<button class="rcb ${isActive?'active':''}"
+            onclick="selRptCourse('${ck}')"
+            style="padding-right:20px;">
+            <span style="display:flex;align-items:center;gap:6px;">
+              <span style="width:5px;height:5px;border-radius:50%;background:${course.color||color};flex-shrink:0;"></span>
+              <span style="color:${course.color||color};font-family:var(--mono);font-size:0.68rem;font-weight:600;">${course.code}</span>
+            </span>
+            <span style="font-size:0.73rem;margin-top:2px;display:block;padding-right:11px;">${course.name}</span>
+          </button>`;
+        });
+      }
+    });
+  });
+
+  if (!hasAny) {
+    list.innerHTML = '<div class="empty" style="padding:10px;font-size:0.77rem;">No groups yet — go to Setup</div>';
     return;
   }
-
-  // Group by owner
-  const myKeys = keys.filter(k => !k.includes('::'));
-  const otherKeys = keys.filter(k => k.includes('::'));
-
-  let html = '';
-  if (myKeys.length) {
-    html += `<div style="font-size:0.68rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;padding:4px 6px;">My Courses</div>`;
-    // تجميع المواد حسب المجموعة
-    const byGroup = {};
-    myKeys.forEach(k => {
-      const c = allCourses[k];
-      const gid = c._groupId || '—';
-      if (!byGroup[gid]) byGroup[gid] = [];
-      byGroup[gid].push({k, c});
-    });
-    Object.entries(byGroup).forEach(([gid, items]) => {
-      if (Object.keys(byGroup).length > 1) {
-        html += `<div style="font-size:0.65rem;color:var(--text3);padding:4px 6px 2px;margin-top:4px;">${gid}</div>`;
-      }
-      html += items.map(({k, c}) =>
-        `<button class="rcb ${rptCourse===k?'active':''}" onclick="selRptCourse('${k}')">
-          <span style="color:${c.color};font-family:var(--mono);font-size:0.7rem;">${c.code}</span><br>
-          <span style="font-size:0.77rem;">${c.name}</span>
-        </button>`
-      ).join('');
-    });
-  }
-
-  if (otherKeys.length) {
-    // Group by owner
-    const byOwner = {};
-    otherKeys.forEach(k => {
-      const owner = k.split('::')[0];
-      if (!byOwner[owner]) byOwner[owner] = [];
-      byOwner[owner].push(k);
-    });
-    Object.entries(byOwner).forEach(([owner, ks]) => {
-      html += `<div style="font-size:0.68rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;padding:4px 6px;margin-top:8px;">👤 ${owner}</div>`;
-      html += ks.map(k => {
-        const c = allCourses[k];
-        return `<button class="rcb ${rptCourse===k?'active':''}" onclick="selRptCourse('${k}')">
-          <span style="color:${c.color};font-family:var(--mono);font-size:0.7rem;">${c.code}</span><br>
-          <span style="font-size:0.77rem;">${c.name}</span>
-        </button>`;
-      }).join('');
-    });
-  }
-
   list.innerHTML = html;
+}
 
-  // Update Team View sidebar
-  const colleagues = accessibleUsernames().filter(u => u !== CU.username);
-  const cl = document.getElementById('rptColleagueList');
-  if (cl) {
-    if (isAdmin() || isTeamLead()) {
-      cl.innerHTML = colleagues.length
-        ? `<button class="btn" style="width:100%;justify-content:center;background:rgba(6,182,212,0.1);border-color:rgba(6,182,212,0.3);color:var(--cyan);font-size:0.78rem;" onclick="openTeamView()">
-            👥 View Team Member's Data
-          </button>`
-        : '<div class="empty" style="padding:6px;font-size:0.75rem;">No team members yet</div>';
-    } else {
-      cl.innerHTML = '';
-    }
+function toggleRptGroup(expandKey, uname, gid) {
+  // إذا كان هذا ضغط على مجموعة — نختارها للعرض الجماعي
+  const ck = uname + '::group::' + gid;
+  if (rptCourse === ck) {
+    // إخفاء/إظهار فقط
+    _rptExpandedGroups[expandKey] = !(_rptExpandedGroups[expandKey] !== false);
+  } else {
+    rptCourse = ck;
+    _rptExpandedGroups[expandKey] = true;
   }
+  renderReports();
+  renderRptPreview();
+}
+
+function getGroupColorForUser(gid, uname) {
+  const p = loadPersonal(uname);
+  return getGroupColor(gid, { ...p, users: [] });
 }
 
 function selRptCourse(k) { rptCourse=k; renderReports(); renderRptPreview(); }
@@ -4417,67 +4271,159 @@ function selRptType(type,el) {
   el.classList.add('active'); renderRptPreview();
 }
 
+// ── helpers لاسترجاع مواد المجموعة المختارة ──────────────
+function _getGroupCourses(rptKey) {
+  // صيغة: uname::group::gid
+  const parts = rptKey.split('::group::');
+  if (parts.length !== 2) return [];
+  const [uname, gid] = parts;
+  const p = loadPersonal(uname);
+  const g = p.groups?.[gid];
+  if (!g) return [];
+  return Object.values(g.courses || {}).map(c => ({ ...c, _owner: uname, _gid: gid }));
+}
+
+function _isGroupKey(k) { return k && k.includes('::group::'); }
+
 function renderRptPreview() {
   if (!rptCourse) return;
-  const c = getCourse(rptCourse); if (!c) return;
+  const labels = { attendance:'Attendance Sheet', monthly:'Monthly Exam Sheet', final:'Final Exam Sheet' };
+  const wrap = document.getElementById('rptTableWrap');
+  const ownerEl = document.getElementById('rptOwner');
+
+  // ── وضع المجموعة كاملة ────────────────────────────────
+  if (_isGroupKey(rptCourse)) {
+    const courses = _getGroupCourses(rptCourse);
+    const gid = rptCourse.split('::group::')[1];
+    const totalStudents = courses.reduce((n,c)=>n+(c.students||[]).length,0);
+    ownerEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span class="badge b-blue">📁 ${gid}</span>
+      <span style="font-size:0.82rem;color:var(--text2);">${courses.length} courses · ${totalStudents} students</span>
+      <span class="badge b-purple">${labels[rptType]}</span>
+    </div>`;
+
+    // عرض ملخص المواد
+    wrap.innerHTML = courses.map(c => `
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);
+        padding:8px 12px;margin-bottom:6px;display:flex;align-items:center;gap:10px;">
+        <span style="font-family:var(--mono);font-size:0.72rem;font-weight:600;color:${c.color};">${c.code}</span>
+        <span style="font-size:0.78rem;flex:1;">${c.name}</span>
+        <span style="font-size:0.7rem;color:var(--text3);">${(c.students||[]).length} students · ${c.room}</span>
+      </div>`).join('') || '<div class="empty">No courses in this group</div>';
+
+    // أزرار تصدير المجموعة + NO SHOW + Biweekly
+    document.querySelector('.export-row').innerHTML = `
+      <button class="btn btn-primary" onclick="exportRptExcel()">📥 Export All Excel</button>
+      <button class="btn btn-ghost" onclick="exportRptPDF()">🖨 Export All PDF</button>
+      <button class="btn btn-ghost" onclick="showReportModal('noshow')" style="color:var(--red);border-color:rgba(239,68,68,0.3);">🚨 NO SHOW</button>
+      <button class="btn btn-ghost" onclick="showReportModal('biweekly')" style="color:var(--yellow);border-color:rgba(234,179,8,0.3);">📊 Biweekly</button>`;
+    return;
+  }
+
+  // ── وضع مادة واحدة ────────────────────────────────────
+  const course = getCourse(rptCourse); if (!course) return;
   const { owner } = resolveCourseKey(rptCourse);
-  const labels={attendance:'Attendance Sheet',monthly:'Monthly Exam Sheet',final:'Final Exam Sheet'};
-  // اسم المجموعة من المفتاح ::g::
   const groupTag = rptCourse.includes('::g::')
     ? `<span class="badge b-accent" style="background:rgba(59,130,246,0.12);color:var(--accent);border:1px solid rgba(59,130,246,0.3);">${rptCourse.split('::g::')[1]}</span>`
     : '';
-  document.getElementById('rptOwner').innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
-    <span class="badge b-blue">${c.code}</span>
-    ${groupTag}
-    <span style="font-size:0.82rem;color:var(--text2);">${c.name}</span>
+  ownerEl.innerHTML = `<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+    <span class="badge b-blue">${course.code}</span>${groupTag}
+    <span style="font-size:0.82rem;color:var(--text2);">${course.name}</span>
     <span class="badge b-purple">${labels[rptType]}</span>
-    <span style="font-size:0.73rem;color:var(--text3);">${(c.students||[]).length} students · ${c.room}</span>
+    <span style="font-size:0.73rem;color:var(--text3);">${(course.students||[]).length} students · ${course.room}</span>
     ${owner !== CU.username ? `<span class="badge b-cyan" style="font-size:0.65rem;">👤 ${owner}</span>` : ''}
   </div>`;
-  const rows=c.students.map(s=>`<tr>
+  const rows = (course.students||[]).map(s=>`<tr>
     <td style="padding:7px 10px;border:1px solid var(--border);font-family:var(--mono);font-size:0.7rem;text-align:center;">${s.seat}</td>
     <td style="padding:7px 10px;border:1px solid var(--border);font-size:0.78rem;">${s.name}</td>
     <td style="padding:7px 10px;border:1px solid var(--border);font-family:var(--mono);font-size:0.68rem;">${s.campusId}</td>
     <td style="padding:7px 10px;border:1px solid var(--border);width:80px;"></td>
   </tr>`).join('');
-  document.getElementById('rptTableWrap').innerHTML=`<table style="width:100%;border-collapse:collapse;">
+  wrap.innerHTML = `<table style="width:100%;border-collapse:collapse;">
     <thead><tr>
       <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);text-align:center;">Seat</th>
       <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Name</th>
       <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Campus ID</th>
       <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);text-align:center;">Signature</th>
     </tr></thead><tbody>${rows}</tbody></table>`;
+  document.querySelector('.export-row').innerHTML = `
+    <button class="btn btn-ghost" onclick="exportRptExcel()">📥 Export Excel</button>
+    <button class="btn btn-ghost" onclick="exportRptPDF()">🖨 Export PDF</button>`;
 }
 
 function exportRptExcel() {
   if (!rptCourse) { alert('Select a course first.'); return; }
+  const labels = { attendance:'Attendance Sheet', monthly:'Monthly Exam Sheet', final:'Final Exam Sheet' };
+  const wb = XLSX.utils.book_new();
+
+  if (_isGroupKey(rptCourse)) {
+    // تصدير كل مواد المجموعة — كل مادة في شيت مستقل
+    const courses = _getGroupCourses(rptCourse);
+    const gid = rptCourse.split('::group::')[1];
+    if (!courses.length) { alert('No courses in this group.'); return; }
+    courses.forEach(c => {
+      const rows = (c.students||[]).map(s=>({'Seat No':s.seat,'Name':s.name,'Campus ID':s.campusId,'Signature':''}));
+      const ws = XLSX.utils.json_to_sheet(rows);
+      ws['!cols'] = [{wch:8},{wch:32},{wch:18},{wch:14}];
+      const fr = rows.length + 2;
+      ws[XLSX.utils.encode_cell({r:fr,c:0})] = { v:'KSAU-HS | COSHP-RM | Student Affairs', t:'s' };
+      XLSX.utils.book_append_sheet(wb, ws, c.code.substring(0,31));
+    });
+    XLSX.writeFile(wb, `${gid}-${rptType}-all.xlsx`);
+    return;
+  }
+
   const c = getCourse(rptCourse); if (!c) return;
-  const rows=c.students.map(s=>({'Seat No':s.seat,'Name':s.name,'Campus ID':s.campusId,'Signature':''}));
-  const ws=XLSX.utils.json_to_sheet(rows); const wb=XLSX.utils.book_new();
-  // Footer
+  const rows = (c.students||[]).map(s=>({'Seat No':s.seat,'Name':s.name,'Campus ID':s.campusId,'Signature':''}));
+  const ws = XLSX.utils.json_to_sheet(rows);
+  ws['!cols'] = [{wch:8},{wch:32},{wch:18},{wch:14}];
   const fr = rows.length + 2;
-  ws[XLSX.utils.encode_cell({r:fr,c:0})] = { v: 'KSAU-HS | COSHP-RM | Student Affairs', t:'s' };
-  XLSX.utils.book_append_sheet(wb,ws,'Sheet'); XLSX.writeFile(wb,`${c.code}-${rptType}.xlsx`);
+  ws[XLSX.utils.encode_cell({r:fr,c:0})] = { v:'KSAU-HS | COSHP-RM | Student Affairs', t:'s' };
+  XLSX.utils.book_append_sheet(wb, ws, 'Sheet');
+  XLSX.writeFile(wb, `${c.code}-${rptType}.xlsx`);
 }
 
 function exportRptPDF() {
   if (!rptCourse) { alert('Select a course first.'); return; }
-  const c = getCourse(rptCourse); if (!c) return;
-  const labels={attendance:'Attendance Sheet',monthly:'Monthly Exam Sheet',final:'Final Exam Sheet'};
-  const rows=c.students.map(s=>`<tr>
+  const labels = { attendance:'Attendance Sheet', monthly:'Monthly Exam Sheet', final:'Final Exam Sheet' };
+
+  const buildTable = (c) => (c.students||[]).map(s=>`<tr>
     <td style="padding:6px 10px;border:1px solid #ccc;text-align:center;font-size:11px;">${s.seat}</td>
     <td style="padding:6px 10px;border:1px solid #ccc;font-size:12px;">${s.name}</td>
     <td style="padding:6px 10px;border:1px solid #ccc;font-size:10px;font-family:monospace;">${s.campusId}</td>
     <td style="padding:6px 10px;border:1px solid #ccc;width:80px;"></td>
   </tr>`).join('');
-  const w=window.open('','_blank');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-  <style>body{font-family:Arial,sans-serif;padding:24px;}h2{font-size:14px;margin-bottom:4px;}p{font-size:11px;color:#666;margin-bottom:16px;}table{width:100%;border-collapse:collapse;}th{background:#f0f0f0;padding:7px 10px;border:1px solid #ccc;font-size:10px;text-align:left;}.footer{margin-top:40px;font-size:9px;color:#aaa;text-align:center;}</style>
-  </head><body>
-  <h2>${labels[rptType]} — ${c.code}</h2>
-  <p>${c.name} · Room: ${c.room} · ${c.students.length} students · Date: ${new Date().toLocaleDateString('en-GB')}</p>
-  <table><thead><tr><th>Seat</th><th>Name</th><th>Campus ID</th><th>Signature</th></tr></thead><tbody>${rows}</tbody></table>
-  <div class="footer">KSAU-HS | COSHP-RM | Student Affairs &nbsp;·&nbsp; Designed and developed by: Ghamdisult · 2026</div>
+
+  const styles = `body{font-family:Arial,sans-serif;padding:24px;}
+    h2{font-size:14px;margin-bottom:4px;}p{font-size:11px;color:#666;margin-bottom:12px;}
+    table{width:100%;border-collapse:collapse;margin-bottom:32px;}
+    th{background:#f0f0f0;padding:7px 10px;border:1px solid #ccc;font-size:10px;text-align:left;}
+    .footer{font-size:9px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:8px;margin-top:16px;}`;
+
+  if (_isGroupKey(rptCourse)) {
+    const courses = _getGroupCourses(rptCourse);
+    const gid = rptCourse.split('::group::')[1];
+    if (!courses.length) { alert('No courses in this group.'); return; }
+    const w = window.open('','_blank');
+    const body = courses.map(c=>`
+      <h2>${labels[rptType]} — ${c.code}</h2>
+      <p>${c.name} · Room: ${c.room} · ${(c.students||[]).length} students · Date: ${new Date().toLocaleDateString('en-GB')}</p>
+      <table><thead><tr><th>Seat</th><th>Name</th><th>Campus ID</th><th>Signature</th></tr></thead>
+      <tbody>${buildTable(c)}</tbody></table>`).join('');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${styles}</style></head>
+      <body>${body}<div class="footer">KSAU-HS | COSHP-RM | Student Affairs · Designed and developed by: Ghamdisult · 2026</div></body></html>`);
+    w.document.close(); setTimeout(()=>w.print(),500);
+    return;
+  }
+
+  const c = getCourse(rptCourse); if (!c) return;
+  const w = window.open('','_blank');
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><style>${styles}</style></head><body>
+    <h2>${labels[rptType]} — ${c.code}</h2>
+    <p>${c.name} · Room: ${c.room} · ${(c.students||[]).length} students · Date: ${new Date().toLocaleDateString('en-GB')}</p>
+    <table><thead><tr><th>Seat</th><th>Name</th><th>Campus ID</th><th>Signature</th></tr></thead>
+    <tbody>${buildTable(c)}</tbody></table>
+    <div class="footer">KSAU-HS | COSHP-RM | Student Affairs · Designed and developed by: Ghamdisult · 2026</div>
   </body></html>`);
   w.document.close(); setTimeout(()=>w.print(),500);
 }
@@ -4980,7 +4926,8 @@ function openAdmin() {
   // Count sessions across all users
   const allSessions = loadAllSessions();
   document.getElementById('adUsers').textContent    = shared.users.length;
-  document.getElementById('adCourses').textContent  = Object.keys(personal.courses).length;
+  const allAdminCourses = getAllCoursesForUser(CU.username);
+  document.getElementById('adCourses').textContent  = allAdminCourses.length;
   document.getElementById('adSessions').textContent = allSessions.length;
   renderUsersTable();
   document.getElementById('adminOverlay').classList.add('show');
@@ -5345,7 +5292,7 @@ function renderStudentHistory() {
   const d = load();
   const campusId = _currentStudent;
   const courseFilter = document.getElementById('studentDetailCourse').value;
-  const showStaff = isAdmin();
+  const showStaff = isAdmin() || isTeamLead();
 
   // Show/hide staff column
   document.getElementById('staffColHeader').style.display = showStaff ? '' : 'none';
@@ -5381,19 +5328,19 @@ function renderStudentHistory() {
 
 function exportStudentReport() {
   if (!_currentStudent) return;
-  const d = load();
   let studentName = '';
-  Object.values(d.courses).forEach(c => {
+  getAllCoursesForUser(CU.username).forEach(c => {
     const s = (c.students||[]).find(s=>s.campusId===_currentStudent);
-    if (s) studentName = s.name;
+    if (s && !studentName) studentName = s.name;
   });
   const rows = [];
-  d.sessions.forEach(sess => {
+  const allSess = loadAllSessions();
+  allSess.forEach(sess => {
     if (!sess.studentDetails) return;
     const sd = sess.studentDetails.find(s=>s.campusId===_currentStudent);
     if (!sd) return;
     const row = {'Date':sess.date,'Course':sess.courseCode,'Status':sd.status};
-    if (isAdmin()) row['Staff'] = sess.staff||'';
+    if (isAdmin() || isTeamLead()) row['Staff'] = sess.staff||'';
     rows.push(row);
   });
   if (!rows.length) { alert('No data to export.'); return; }
@@ -5788,7 +5735,7 @@ function exportBiweeklyVersioned(version) {
     const summaryRows = [];
 
     shared.users.forEach(u => {
-      const userSess = allSessions.filter(s => s._user === u.username && s.date >= cutoff);
+      const userSess = allSessions.filter(s => s._owner === u.username && s.date >= cutoff);
       const manual = userSess.filter(s => !s.electronicOnly && !s.lateManual).length;
       const elec   = userSess.filter(s => s.electronicOnly).length;
       const late   = userSess.filter(s => s.lateManual).length;
@@ -6044,412 +5991,7 @@ function doExportAll(filename) {
   setTimeout(()=> doExportPDF(filename, window._exportTitle, window._exportCourse?.room||'', (window._exportRows||[]).length, window._exportStaff), 300);
 }
 
-// ══════════════════════════════════════════════════════════
-//  STAFF PAGE — Tree + Detail Panel
-// ══════════════════════════════════════════════════════════
-let _selectedStaff = null;
 
-function renderStaffPage() {
-  renderStaffTree();
-  // Reset detail
-  document.getElementById('staffDetailEmpty').style.display = 'block';
-  document.getElementById('staffMemberDetail').style.display = 'none';
-  _selectedStaff = null;
-}
-
-function renderStaffTree() {
-  const shared = loadShared();
-  const tree = document.getElementById('staffTree');
-  const users = shared.users;
-
-  // Build structure
-  const admins = users.filter(u => u.role === 'admin');
-  const teamLeads = users.filter(u => u.role === 'teamlead');
-  const allTeamMembers = teamLeads.flatMap(tl => tl.team || []);
-  const independents = users.filter(u =>
-    u.role === 'user' && !allTeamMembers.includes(u.username)
-  );
-
-  let html = '';
-
-  // Admin section — visible only to admin themselves
-  if (isAdmin()) {
-    admins.forEach(u => {
-      html += renderTreeNode(u, 0, '🔐', 'var(--purple)');
-    });
-  }
-
-  // Team Lead sections
-  teamLeads.forEach(tl => {
-    html += renderTreeNode(tl, 0, '👥', 'var(--cyan)');
-    (tl.team || []).forEach(memberUsername => {
-      const member = users.find(u => u.username === memberUsername);
-      if (member) html += renderTreeNode(member, 1, '👤', 'var(--accent)');
-    });
-  });
-
-  // Independent users
-  if (independents.length) {
-    html += `<div style="font-size:0.65rem;color:var(--text3);font-weight:600;text-transform:uppercase;
-      letter-spacing:0.4px;padding:8px 8px 4px;margin-top:4px;border-top:1px solid var(--border);">
-      Independent
-    </div>`;
-    independents.forEach(u => {
-      html += renderTreeNode(u, 0, '👤', 'var(--text2)');
-    });
-  }
-
-  tree.innerHTML = html || '<div class="empty" style="padding:10px;font-size:0.75rem;">No staff configured</div>';
-}
-
-function renderTreeNode(u, indent, icon, color) {
-  const courses = getAllCoursesForUser(u.username);
-  const group = courses.length > 0 ? (courses[0].code.match(/^[A-Z]+/)?.[0] || '') : '';
-  const courseList = courses.map(c => c.code).join(', ') || '—';
-  const isSelected = _selectedStaff === u.username;
-  const isMe = u.username === CU.username;
-
-  return `<div style="padding-right:${indent * 16}px;">
-    <div onclick="selectStaffMember('${u.username}')"
-      style="display:flex;align-items:center;gap:8px;padding:8px 10px;
-        border-radius:var(--r);cursor:pointer;transition:all 0.15s;
-        background:${isSelected ? 'rgba(59,130,246,0.12)' : 'transparent'};
-        border:1px solid ${isSelected ? 'rgba(59,130,246,0.3)' : 'transparent'};">
-      <span style="font-size:0.85rem;flex-shrink:0;">${icon}</span>
-      <div style="flex:1;min-width:0;">
-        <div style="font-size:0.8rem;font-weight:${isMe?'700':'500'};color:${isSelected?'var(--accent)':'var(--text)'};
-          display:flex;align-items:center;gap:6px;">
-          ${u.username}
-          ${isMe?'<span style="font-size:0.58rem;color:var(--text3);">(you)</span>':''}
-        </div>
-        <div style="font-size:0.65rem;color:var(--text3);margin-top:1px;overflow:hidden;
-          text-overflow:ellipsis;white-space:nowrap;" title="${courseList}">
-          ${courses.length > 0 ? courseList : 'No courses yet'}
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function selectStaffMember(username) {
-  _selectedStaff = username;
-  renderStaffTree(); // re-render to update selection highlight
-
-  const shared = loadShared();
-  const u = shared.users.find(x => x.username === username);
-  if (!u) return;
-
-  const p = loadPersonal(username);
-  const courses = getAllCoursesForUser(username);
-
-  // Header
-  document.getElementById('staffMemberAvatar').textContent = username[0].toUpperCase();
-  document.getElementById('staffMemberName').textContent = username;
-
-  const group = courses.length > 0 ? (courses[0].code.match(/^[A-Z]+/)?.[0] || 'N/A') : 'N/A';
-  document.getElementById('staffMemberMeta').textContent =
-    `${group} · ${courses.length} course${courses.length!==1?'s':''} · ${u.role}`;
-
-  const ROLE_BADGE = { admin:'b-purple', teamlead:'b-cyan', user:'b-blue' };
-  const ROLE_LABEL = { admin:'Admin', teamlead:'Team Lead', user:'User' };
-  const badge = document.getElementById('staffMemberRoleBadge');
-  badge.className = `badge ${ROLE_BADGE[u.role]||'b-blue'}`;
-  badge.textContent = ROLE_LABEL[u.role] || u.role;
-
-  // Courses & Sheets section
-  const coursesDiv = document.getElementById('staffMemberCourses');
-  if (!courses.length) {
-    coursesDiv.innerHTML = '<div class="empty">No courses uploaded yet</div>';
-  } else {
-    coursesDiv.innerHTML = courses.map(c => {
-      const canViewSheets = true; // All users can view sheets
-      return `<div style="background:var(--surface2);border:1px solid var(--border);
-        border-radius:var(--r);padding:12px 14px;">
-        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-          <div style="width:10px;height:10px;border-radius:50%;background:${c.color};flex-shrink:0;"></div>
-          <div style="flex:1;">
-            <div style="font-size:0.83rem;font-weight:600;">${c.code}</div>
-            <div style="font-size:0.72rem;color:var(--text3);">${c.name} · ${c.room} · ${(c.students||[]).length} students</div>
-          </div>
-          <div style="display:flex;gap:6px;flex-wrap:wrap;">
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;"
-              onclick="exportStaffSheet('${username}','${c.code}','attendance')">
-              📋 Attendance
-            </button>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;"
-              onclick="exportStaffSheet('${username}','${c.code}','monthly')">
-              📝 Monthly
-            </button>
-            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.72rem;"
-              onclick="exportStaffSheet('${username}','${c.code}','final')">
-              📌 Final
-            </button>
-          </div>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  // NO SHOW — Team Lead (own team) + Admin
-  const canSeeNoShow = isAdmin() || (isTeamLead() && canAccessUser(username));
-  const noShowCard = document.getElementById('staffNoShowCard');
-  if (canSeeNoShow) {
-    noShowCard.style.display = 'block';
-    const noShows = getNoShowForUser(username);
-    const list = document.getElementById('staffNoShowList');
-    if (!noShows.length) {
-      list.innerHTML = '<div class="empty">No NO SHOW students</div>';
-    } else {
-      list.innerHTML = noShows.map(s => `
-        <div style="display:flex;align-items:center;gap:10px;padding:7px 10px;
-          background:var(--surface2);border-radius:6px;font-size:0.78rem;">
-          <span class="badge b-red" style="font-size:0.6rem;">NO SHOW</span>
-          <span style="font-weight:500;">${s.name}</span>
-          <span style="color:var(--text3);font-family:var(--mono);font-size:0.67rem;">${s.campusId}</span>
-        </div>`).join('');
-    }
-  } else {
-    noShowCard.style.display = 'none';
-  }
-
-  // Sessions + Stats — Admin only
-  const sessionsCard = document.getElementById('staffSessionsCard');
-  const statsCard = document.getElementById('staffStatsCard');
-
-  if (isAdmin()) {
-    sessionsCard.style.display = 'block';
-    statsCard.style.display = 'block';
-
-    const sessions = loadPersonal(username).sessions || [];
-    const tbody = document.getElementById('staffSessionsBody');
-
-    if (!sessions.length) {
-      tbody.innerHTML = '<tr><td colspan="6" class="empty">No sessions recorded</td></tr>';
-    } else {
-      const TYPE_ICON = { false:'✅', true:'⚡' };
-      tbody.innerHTML = [...sessions].reverse().map(s => `<tr>
-        <td style="padding:6px 10px;border:1px solid var(--border);font-family:var(--mono);font-size:0.7rem;">${s.date}</td>
-        <td style="padding:6px 10px;border:1px solid var(--border);"><span class="badge b-blue" style="font-size:0.65rem;">${s.courseCode}</span></td>
-        <td style="padding:6px 10px;border:1px solid var(--border);font-size:0.72rem;">
-          ${s.lateManual ? '📋 Manual Only' : s.electronicOnly ? '⚡ Electronic' : '✅ Manual+Electronic'}
-        </td>
-        <td style="padding:6px 10px;border:1px solid var(--border);text-align:center;">${s.total||0}</td>
-        <td style="padding:6px 10px;border:1px solid var(--border);text-align:center;color:var(--red);">${(s.electronicAbsent||0)}</td>
-        <td style="padding:6px 10px;border:1px solid var(--border);text-align:center;
-          color:${(s.accuracy||0)>=90?'var(--green)':'var(--yellow)'};">${s.accuracy||0}%</td>
-      </tr>`).join('');
-    }
-
-    // Stats
-    const total = sessions.length;
-    const avgAcc = total ? Math.round(sessions.reduce((a,s)=>a+(s.accuracy||0),0)/total) : 0;
-    const noShowCount = getNoShowForUser(username).length;
-    document.getElementById('staffStatSessions').textContent = total;
-    document.getElementById('staffStatAccuracy').textContent = avgAcc + '%';
-    document.getElementById('staffStatNoShow').textContent = noShowCount;
-  } else {
-    sessionsCard.style.display = 'none';
-    statsCard.style.display = 'none';
-  }
-
-  document.getElementById('staffDetailEmpty').style.display = 'none';
-  document.getElementById('staffMemberDetail').style.display = 'block';
-}
-
-function getNoShowForUser(username) {
-  const p = loadPersonal(username);
-  const studentMap = {};
-  // جمع الطلاب من كل المجموعات
-  getAllCoursesForUser(username).forEach(c => {
-    (c.students||[]).forEach(s => {
-      if (!studentMap[s.campusId]) studentMap[s.campusId] = { name:s.name, campusId:s.campusId, seen:false };
-    });
-  });
-  const sessions = p.sessions || [];
-  sessions.forEach(sess => {
-    (sess.studentDetails||[]).forEach(sd => {
-      if (sd.status !== 'Absent' && studentMap[sd.campusId]) studentMap[sd.campusId].seen = true;
-    });
-  });
-  return Object.values(studentMap).filter(s => !s.seen);
-}
-
-function exportStaffSheet(username, courseCode, type) {
-  const c = getCourseForUser(username, courseCode);
-  if (!c) { alert('Course not found.'); return; }
-
-  const TYPE_LABELS = { attendance:'Attendance Sheet', monthly:'Monthly Exam', final:'Final Exam' };
-  const label = TYPE_LABELS[type] || type;
-
-  // Show export options modal
-  showExportOptionsModal(c, label, username, courseCode, type);
-}
-
-function showExportOptionsModal(c, label, username, courseCode, type) {
-  // Create quick export modal
-  const overlay = document.getElementById('reportModalOverlay');
-  document.getElementById('reportModalBody').innerHTML = `
-    <div style="font-size:0.88rem;font-weight:600;margin-bottom:6px;">${label}</div>
-    <div style="font-size:0.78rem;color:var(--text3);margin-bottom:16px;">${c.code} · ${c.name} · ${(c.students||[]).length} students</div>
-    <div style="display:flex;flex-direction:column;gap:8px;">
-      <button class="btn btn-primary btn-full" onclick="doExportStaffSheet('${username}','${courseCode}','${type}','excel');closeReportModal()">
-        📥 Export Excel
-      </button>
-      <button class="btn btn-ghost btn-full" onclick="doExportStaffSheet('${username}','${courseCode}','${type}','pdf');closeReportModal()">
-        🖨 Export PDF
-      </button>
-      <button class="btn btn-ghost btn-full" onclick="doExportStaffSheet('${username}','${courseCode}','${type}','both');closeReportModal()">
-        📦 Export Both
-      </button>
-    </div>`;
-  overlay.classList.add('show');
-}
-
-function doExportStaffSheet(username, courseCode, type, format) {
-  const c = getCourseForUser(username, courseCode);
-  if (!c) return;
-
-  const TYPE_LABELS = { attendance:'Attendance Sheet', monthly:'Monthly Exam Sheet', final:'Final Exam Sheet' };
-  const label = TYPE_LABELS[type] || type;
-  const rows = (c.students||[]).map(s => ({'Seat No':s.seat,'Name':s.name,'Campus ID':s.campusId,'Signature':''}));
-
-  if (format === 'excel' || format === 'both') {
-    const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [{wch:8},{wch:32},{wch:18},{wch:14}];
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, label);
-    XLSX.writeFile(wb, `${c.code}-${type}-${username}.xlsx`);
-  }
-
-  if (format === 'pdf' || format === 'both') {
-    const tableRows = (c.students||[]).map(s => `<tr>
-      <td style="padding:6px 10px;border:1px solid #ddd;text-align:center;font-size:11px;">${s.seat}</td>
-      <td style="padding:6px 10px;border:1px solid #ddd;font-size:12px;">${s.name}</td>
-      <td style="padding:6px 10px;border:1px solid #ddd;font-size:10px;font-family:monospace;">${s.campusId}</td>
-      <td style="padding:6px 10px;border:1px solid #ddd;width:80px;"></td>
-    </tr>`).join('');
-
-    const w = window.open('', '_blank');
-    w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-    <style>
-      body{font-family:Arial,sans-serif;padding:24px;}
-      h2{font-size:14px;margin-bottom:4px;}
-      p{font-size:11px;color:#666;margin-bottom:16px;}
-      table{width:100%;border-collapse:collapse;}
-      th{background:#f0f0f0;padding:7px 10px;border:1px solid #ddd;font-size:10px;text-align:left;}
-      .footer{margin-top:40px;font-size:9px;color:#aaa;text-align:center;border-top:1px solid #eee;padding-top:10px;}
-    </style></head><body>
-    <h2>${label} — ${c.code}</h2>
-    <p>${c.name} &nbsp;·&nbsp; Room: ${c.room} &nbsp;·&nbsp; ${(c.students||[]).length} students &nbsp;·&nbsp; Date: ${new Date().toLocaleDateString('en-GB')}</p>
-    <table>
-      <thead><tr><th>Seat</th><th>Name</th><th>Campus ID</th><th>Signature</th></tr></thead>
-      <tbody>${tableRows}</tbody>
-    </table>
-    <div class="footer">KSAU-HS | COSHP-RM | Student Affairs &nbsp;·&nbsp; Designed and developed by: Ghamdisult · 2026</div>
-    </body></html>`);
-    w.document.close();
-    setTimeout(() => w.print(), 500);
-  }
-}
-
-// ══════════════════════════════════════════════════════════
-//  TEAM VIEW — View another user's data
-// ══════════════════════════════════════════════════════════
-
-function openTeamView() {
-  const shared = loadShared();
-  const accessible = accessibleUsernames().filter(u => u !== CU.username);
-  const list = document.getElementById('teamViewUserList');
-
-  if (!accessible.length) {
-    list.innerHTML = '<div class="empty">No team members assigned yet.</div>';
-  } else {
-    list.innerHTML = accessible.map(username => {
-      const u = shared.users.find(x=>x.username===username);
-      const p = loadPersonal(username);
-      const courseCount = getAllCoursesForUser(username).length;
-      const isViewing = _viewingUser === username;
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
-        background:${isViewing?'rgba(6,182,212,0.1)':'var(--surface2)'};
-        border:1px solid ${isViewing?'rgba(6,182,212,0.4)':'var(--border)'};
-        border-radius:var(--r);cursor:pointer;transition:all 0.15s;"
-        onclick="setViewingUser('${username}')">
-        <div style="width:28px;height:28px;border-radius:50%;background:var(--accent);
-          display:flex;align-items:center;justify-content:center;font-size:0.72rem;
-          font-weight:700;color:#fff;flex-shrink:0;">${username[0].toUpperCase()}</div>
-        <div style="flex:1;">
-          <div style="font-size:0.83rem;font-weight:500;">${username}</div>
-          <div style="font-size:0.7rem;color:var(--text3);">
-            ${u?u.role:''} · ${courseCount} course${courseCount!==1?'s':''}
-          </div>
-        </div>
-        ${isViewing?'<span class="badge b-cyan" style="font-size:0.65rem;">Viewing</span>':''}
-      </div>`;
-    }).join('');
-  }
-
-  document.getElementById('teamViewOverlay').classList.add('show');
-}
-
-function closeTeamView() {
-  document.getElementById('teamViewOverlay').classList.remove('show');
-}
-
-function setViewingUser(username) {
-  _viewingUser = username;
-  closeTeamView();
-  updateTeamViewUI();
-  // Refresh current page
-  const activePage = document.querySelector('.page.active');
-  if (activePage) {
-    const id = activePage.id.replace('page-','');
-    if (id === 'reports')    renderReports();
-    if (id === 'students')   renderStudentsPage();
-    if (id === 'attendance') renderPicker();
-    if (id === 'schedule')   renderSched();
-    if (id === 'staff')      renderStaffPage();
-  }
-}
-
-function updateTeamViewUI() {
-  const isViewing = !!_viewingUser;
-  const label = _viewingUser || '';
-
-  // Reports banner
-  const bannerR = document.getElementById('teamViewBannerReports');
-  if (bannerR) {
-    bannerR.style.display = isViewing ? 'flex' : 'none';
-    const lbl = document.getElementById('teamViewLabelReports');
-    if (lbl) lbl.textContent = label;
-  }
-
-  // Attendance banner
-  const bannerA = document.getElementById('teamViewBannerAttendance');
-  if (bannerA) {
-    bannerA.style.display = isViewing ? 'flex' : 'none';
-    const lblA = document.getElementById('teamViewLabelAttendance');
-    if (lblA) lblA.textContent = label;
-  }
-
-  // Attendance "View Team" button
-  const btnWrapAtt = document.getElementById('teamViewBtnWrapAtt');
-  const openBtnAtt = document.getElementById('teamViewOpenBtnAtt');
-  if (btnWrapAtt) btnWrapAtt.style.display = (isAdmin()||isTeamLead()) ? 'flex' : 'none';
-  if (openBtnAtt) openBtnAtt.style.display = isViewing ? 'none' : 'inline-flex';
-
-  // Students banner & button
-  const btnWrap = document.getElementById('teamViewBtnWrap');
-  const bannerS = document.getElementById('teamViewBannerStudents');
-  const openBtn = document.getElementById('teamViewOpenBtn');
-  if (btnWrap) btnWrap.style.display = (isAdmin()||isTeamLead()) ? 'flex' : 'none';
-  if (bannerS) bannerS.style.display = isViewing ? 'flex' : 'none';
-  if (openBtn) openBtn.style.display = isViewing ? 'none' : 'inline-flex';
-  const lbl2 = document.getElementById('teamViewLabelStudents');
-  if (lbl2) lbl2.textContent = label;
-}
-
-// ══════════════════════════════════════════════════════════
-//  INTERACTIVE TOUR
 // ══════════════════════════════════════════════════════════
 const TOUR_STEPS = [
   { title:'Welcome to Attendance Manager 🎓', desc:'This quick tour will show you everything you need to know. It takes less than 2 minutes.', target:null },
