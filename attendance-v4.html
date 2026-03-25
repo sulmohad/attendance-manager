@@ -115,6 +115,9 @@ select.input{cursor:pointer;}
 .week-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;flex-wrap:wrap;}
 .week-bar h2{font-size:0.95rem;font-weight:600;}
 .week-label{font-size:0.8rem;font-weight:600;color:var(--accent);background:var(--accent-glow);border:1px solid rgba(59,130,246,0.25);border-radius:var(--r);padding:6px 14px;min-width:150px;text-align:center;font-family:var(--mono);}
+.sched-view-toggle{display:flex;gap:4px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:3px;}
+.svt{padding:4px 12px;border-radius:5px;font-size:0.72rem;font-weight:600;color:var(--text3);cursor:pointer;transition:all 0.15s;border:none;background:transparent;}
+.svt.active{background:var(--accent);color:#fff;}
 .week-num{font-size:0.73rem;color:var(--text3);font-family:var(--mono);}
 
 .sched-wrap{overflow-x:auto;}
@@ -389,54 +392,13 @@ select.input{cursor:pointer;}
 /* FOOTER */
 .footer{text-align:center;padding:16px;font-size:0.67rem;color:var(--text3);font-family:var(--mono);border-top:1px solid var(--border);margin-top:40px;}
 
-/* ══ MOBILE NAV ══════════════════════════════════ */
 @media(max-width:600px){
-  /* Topbar: brand + user only, no nav */
-  .topbar{padding:0 12px;flex-wrap:nowrap;}
-  .brand{margin-right:auto;font-size:0.82rem;}
-  .nav-tabs{display:none;}  /* hide inline nav on mobile */
-
-  /* Floating bottom nav bar */
-  .mobile-nav{
-    display:flex;
-    position:fixed;
-    bottom:0;left:0;right:0;
-    background:var(--surface);
-    border-top:1px solid var(--border);
-    overflow-x:auto;
-    overflow-y:hidden;
-    -webkit-overflow-scrolling:touch;
-    scroll-snap-type:x mandatory;
-    z-index:300;
-    padding-bottom:env(safe-area-inset-bottom);
-    scrollbar-width:none;
-  }
-  .mobile-nav::-webkit-scrollbar{display:none;}
-  .mn-item{
-    display:flex;flex-direction:column;align-items:center;justify-content:center;
-    min-width:64px;padding:6px 4px 5px;
-    font-size:0.58rem;font-weight:500;color:var(--text3);
-    cursor:pointer;white-space:nowrap;gap:3px;
-    scroll-snap-align:start;
-    border-top:2px solid transparent;
-    transition:color 0.15s;
-    flex-shrink:0;
-  }
-  .mn-item .mn-icon{font-size:1.2rem;line-height:1;}
-  .mn-item.active{color:var(--accent);border-top-color:var(--accent);}
-  .mn-item:hover{color:var(--text2);}
-
-  /* Push page content above bottom nav */
-  .page{padding:16px 12px 80px;}
-  #appPage > .alert-banner{padding:7px 12px;}
-
-  /* General mobile fixes */
+  .topbar{padding:0 12px;}
+  .brand{margin-right:12px;font-size:0.82rem;}
+  .nt{padding:0 10px;font-size:0.73rem;}
+  .page{padding:16px 12px;}
   .student-grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
   .stats-grid{grid-template-columns:repeat(2,1fr);}
-}
-/* On desktop: hide mobile nav */
-@media(min-width:601px){
-  .mobile-nav{display:none;}
 }
 </style>
 </head>
@@ -477,6 +439,11 @@ select.input{cursor:pointer;}
   <!-- Topbar -->
   <div class="topbar">
     <div class="brand" id="brandLogo">🎓 <span>Attendance</span> Manager</div>
+    <div class="group-selector" id="groupSelectorWrap" style="display:none;">
+      <div class="group-dot" id="groupDot" style="background:var(--accent);"></div>
+      <select id="groupSelect" onchange="switchGroup(this.value)" title="Switch group"></select>
+    </div>
+    <span class="group-none-msg" id="groupNoneMsg" style="display:none;">No groups yet — go to Setup</span>
     <div class="nav-tabs">
       <div class="nt active" onclick="showPage('schedule')" id="tab-schedule" data-tour="tab-schedule">📅 Schedule</div>
       <div class="nt" onclick="showPage('attendance')" id="tab-attendance" data-tour="tab-attendance">✋ Attendance</div>
@@ -498,38 +465,6 @@ select.input{cursor:pointer;}
     </div>
   </div>
 
-
-  <!-- ══ MOBILE BOTTOM NAV ══ -->
-  <nav class="mobile-nav" id="mobileNav">
-    <div class="mn-item active" onclick="showPage('schedule')" id="mn-schedule">
-      <span class="mn-icon">📅</span><span>Schedule</span>
-    </div>
-    <div class="mn-item" onclick="showPage('attendance')" id="mn-attendance">
-      <span class="mn-icon">✋</span><span>Attendance</span>
-    </div>
-    <div class="mn-item" onclick="showPage('reports')" id="mn-reports">
-      <span class="mn-icon">📋</span><span>Reports</span>
-    </div>
-    <div class="mn-item" onclick="showPage('students')" id="mn-students">
-      <span class="mn-icon">👤</span><span>Students</span>
-    </div>
-    <div class="mn-item" onclick="showPage('staff')" id="mn-staff">
-      <span class="mn-icon">👥</span><span>Staff</span>
-    </div>
-    <div class="mn-item" onclick="showPage('setup')" id="mn-setup">
-      <span class="mn-icon">⚙️</span><span>Setup</span>
-    </div>
-    <div class="mn-item" onclick="showPage('help')" id="mn-help">
-      <span class="mn-icon">❓</span><span>Help</span>
-    </div>
-    <div class="mn-item" onclick="showPage('analytics')" id="mn-analytics" style="display:none;">
-      <span class="mn-icon">📊</span><span>Analytics</span>
-    </div>
-    <div class="mn-item" onclick="openAdmin()" id="mn-admin" style="display:none;color:var(--purple);">
-      <span class="mn-icon">🔐</span><span>Admin</span>
-    </div>
-  </nav>
-
   <!-- ══ SCHEDULE PAGE ══ -->
   <div class="page active" id="page-schedule">
     <div class="week-bar">
@@ -545,6 +480,10 @@ select.input{cursor:pointer;}
         <button class="btn btn-ghost" onclick="changeWeek(1)">Next ▶</button>
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
+        <div class="sched-view-toggle" id="schedViewToggle">
+          <button class="svt active" id="svt-merged" onclick="setSchedView('merged')">All Groups</button>
+          <button class="svt" id="svt-single" onclick="setSchedView('single')">Active Group</button>
+        </div>
         <span class="week-num" id="weekNum"></span>
         <button class="btn btn-ghost" id="alertToggleBtn" onclick="toggleSmartAlert()"
           style="font-size:0.72rem;padding:4px 10px;display:flex;align-items:center;gap:5px;">
@@ -558,9 +497,7 @@ select.input{cursor:pointer;}
       <p>No schedule configured yet.<br>Go to <strong>Setup</strong> to add your courses and weekly schedule.</p>
       <button class="btn btn-primary" onclick="showPage('setup')">Go to Setup →</button>
     </div>
-    <div class="sched-wrap" id="schedWrap" style="display:none">
-      <table class="sched-tbl" id="schedTbl"></table>
-    </div>
+    <div id="schedWrap" style="display:none;"></div>
   </div>
 
   <!-- ══ ATTENDANCE PAGE ══ -->
@@ -1070,7 +1007,13 @@ select.input{cursor:pointer;}
         <h2 style="font-size:0.95rem;font-weight:700;">Analytics <span class="badge b-purple" style="vertical-align:middle;margin-left:8px;">Admin Only</span></h2>
         <p style="font-size:0.75rem;color:var(--text3);margin-top:4px;">الحضور الإلكتروني مقابل اليدوي — دليل لدعم القرار الإداري</p>
       </div>
-      <button class="btn btn-ghost" onclick="openExportDialog()">📥 تصدير Excel</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <select class="input" id="anGroupFilter" onchange="renderAnalytics()"
+          style="display:none;font-size:0.78rem;padding:5px 10px;min-width:120px;">
+          <option value="">All Groups</option>
+        </select>
+        <button class="btn btn-ghost" onclick="openExportDialog()">📥 تصدير Excel</button>
+      </div>
     </div>
 
     <!-- Archive notice -->
@@ -1245,11 +1188,23 @@ select.input{cursor:pointer;}
               <div class="us">الملف المصدَّر من نظام الجامعة</div>
             </div>
             <div id="sheetSelectorWrap" style="display:none;margin-top:10px;">
-              <div class="field" style="margin:0;">
-                <label>Select your group sheet · اختر شيت مجموعتك</label>
-                <select class="input" id="sheetSelector" onchange="parseScheduleSheet()">
+              <div class="field" style="margin:0 0 10px;">
+                <label>Select sheet · اختر الشيت</label>
+                <select class="input" id="sheetSelector" onchange="onSheetSelected()">
                   <option value="">— Select sheet —</option>
                 </select>
+              </div>
+              <div class="field" style="margin:0 0 10px;">
+                <label>Group name · اسم المجموعة</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input class="input" type="text" id="groupNameInput"
+                    placeholder="e.g. MAB, MAA, Group 1"
+                    style="flex:1;" />
+                  <button class="btn btn-primary" onclick="parseScheduleSheet()" id="loadGroupBtn" disabled>
+                    ✅ Load
+                  </button>
+                </div>
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;" id="existingGroupChips"></div>
               </div>
             </div>
           </div>
@@ -2107,22 +2062,45 @@ function initShared() {
 
 function saveShared(d) { localStorage.setItem(SK_SHARED, JSON.stringify(d)); }
 
-// Personal store: courses, schedule, term, sessions, tourDone
+// Personal store: groups (multi-group), term, sessions, tourDone
+// groups structure: { "MAB": { courses:{}, schedule:[] }, ... }
+// activeGroup: string key into groups
 function initPersonal() {
   return {
-    term:     { start:null, weeks:16 },
-    courses:  {},
-    schedule: [],
-    sessions: [],
-    tourDone: false
+    term:        { start:null, weeks:16 },
+    groups:      {},
+    activeGroup: null,
+    // Legacy flat fields kept for migration compatibility:
+    courses:     {},
+    schedule:    [],
+    sessions:    [],
+    tourDone:    false
   };
+}
+
+// ── Migration: upgrade old flat data to multi-group ──────
+function migratePersonal(p) {
+  // Already migrated if groups object exists and has entries
+  if (p.groups && Object.keys(p.groups).length > 0) return p;
+  // Has old flat courses → migrate to "Group 1"
+  if (p.courses && Object.keys(p.courses).length > 0) {
+    p.groups = { 'Group 1': { courses: p.courses, schedule: p.schedule || [] } };
+    p.activeGroup = 'Group 1';
+    // tag existing sessions with groupId
+    (p.sessions || []).forEach(s => { if (!s.groupId) s.groupId = 'Group 1'; });
+  } else {
+    p.groups = {};
+    p.activeGroup = null;
+  }
+  return p;
 }
 
 function loadPersonal(username) {
   const u = username || (CU ? CU.username : null);
   if (!u) return initPersonal();
   try {
-    return JSON.parse(localStorage.getItem(SK_USER(u))) || initPersonal();
+    const raw = JSON.parse(localStorage.getItem(SK_USER(u))) || initPersonal();
+    return migratePersonal(raw);
   } catch { return initPersonal(); }
 }
 
@@ -2134,14 +2112,24 @@ function savePersonal(d, username) {
 
 // ── Cross-user data helpers ───────────────────────────────
 
-// Get courses — respects _viewingUser state
+// Get courses — respects _viewingUser state + multi-group aware
 function loadAccessibleCourses(forceUser) {
   const username = forceUser || _viewingUser || CU.username;
   const p = loadPersonal(username);
   const result = {};
-  Object.entries(p.courses || {}).forEach(([k, c]) => {
-    result[k] = { ...c, _owner: username, _origKey: k };
-  });
+  // جمع من كل المجموعات
+  if (p.groups && Object.keys(p.groups).length > 0) {
+    Object.entries(p.groups).forEach(([gid, g]) => {
+      Object.entries(g.courses || {}).forEach(([k, c]) => {
+        const key = `${k}::g::${gid}`; // مفتاح فريد per group
+        result[key] = { ...c, _owner: username, _origKey: k, _groupId: gid };
+      });
+    });
+  } else {
+    Object.entries(p.courses || {}).forEach(([k, c]) => {
+      result[k] = { ...c, _owner: username, _origKey: k };
+    });
+  }
   return result;
 }
 
@@ -2163,17 +2151,44 @@ function loadUserCourses(username) {
 
 // Resolve a potentially-prefixed course key to {owner, key}
 function resolveCourseKey(key) {
+  // صيغة مجموعة: code::g::groupId → لا تُعالج هنا
+  if (key.includes('::g::')) {
+    return { owner: CU?.username, key: key.split('::g::')[0] };
+  }
   if (key.includes('::')) {
     const [owner, origKey] = key.split('::');
     return { owner, key: origKey };
   }
-  return { owner: CU.username, key };
+  return { owner: CU?.username || '', key };
 }
 
-// Get course object from potentially-prefixed key
+// Get course object from potentially-prefixed key (multi-group aware)
+// صيغ المفاتيح الممكنة:
+//   "ANTM 214"            → مفتاح عادي (active group)
+//   "user::ANTM 214"      → مفتاح مستخدم (cross-user)
+//   "ANTM 214::g::MAB"    → مفتاح مجموعة محدد
 function getCourse(key) {
+  // صيغة مجموعة محددة: code::g::groupId
+  if (key.includes('::g::')) {
+    const [courseCode, , gid] = key.split('::');
+    const p = loadPersonal(CU?.username);
+    return p.groups?.[gid]?.courses?.[courseCode] || null;
+  }
+  // صيغة cross-user: owner::courseCode
   const { owner, key: origKey } = resolveCourseKey(key);
   const p = loadPersonal(owner);
+  // البحث في المجموعة النشطة أولاً
+  if (p.groups && p.activeGroup && p.groups[p.activeGroup]) {
+    const c = p.groups[p.activeGroup].courses[origKey];
+    if (c) return c;
+  }
+  // fallback: البحث في كل المجموعات
+  if (p.groups) {
+    for (const gid of Object.keys(p.groups)) {
+      const c = p.groups[gid].courses?.[origKey];
+      if (c) return c;
+    }
+  }
   return p.courses ? p.courses[origKey] : null;
 }
 
@@ -2194,13 +2209,16 @@ function save(d) {
     shared.users = d.users;
     saveShared(shared);
   }
-  // Save personal data
+  // Save personal data (multi-group aware)
   const personal = {
-    term:     d.term     || initPersonal().term,
-    courses:  d.courses  || {},
-    schedule: d.schedule || [],
-    sessions: d.sessions || [],
-    tourDone: d.tourDone || false
+    term:        d.term        || initPersonal().term,
+    groups:      d.groups      || {},
+    activeGroup: d.activeGroup || null,
+    // keep flat fields for compatibility
+    courses:     d.courses     || {},
+    schedule:    d.schedule    || [],
+    sessions:    d.sessions    || [],
+    tourDone:    d.tourDone    || false
   };
   savePersonal(personal);
 }
@@ -2221,6 +2239,64 @@ function loadAllSessions() {
     (p.sessions||[]).forEach(s => all.push({...s, _owner: u.username}));
   });
   return all;
+}
+
+// ══════════════════════════════════════════════════════════
+//  MULTI-GROUP HELPERS
+// ══════════════════════════════════════════════════════════
+
+const GROUP_COLORS = ['#3b82f6','#a855f7','#22c55e','#f97316','#06b6d4','#eab308'];
+
+function getActiveGroup(d) {
+  if (!d) d = load();
+  if (!d.groups || !d.activeGroup) return { courses:{}, schedule:[] };
+  return d.groups[d.activeGroup] || { courses:{}, schedule:[] };
+}
+function getActiveCourses(d) { return getActiveGroup(d).courses || {}; }
+function getActiveSchedule(d) { return getActiveGroup(d).schedule || []; }
+
+function getGroupColor(groupId, d) {
+  if (!d) d = load();
+  const idx = Object.keys(d.groups || {}).indexOf(groupId);
+  return GROUP_COLORS[Math.max(0, idx) % GROUP_COLORS.length];
+}
+
+function refreshGroupSelector() {
+  const d    = load();
+  const wrap = document.getElementById('groupSelectorWrap');
+  const sel  = document.getElementById('groupSelect');
+  const dot  = document.getElementById('groupDot');
+  const none = document.getElementById('groupNoneMsg');
+  if (!wrap || !sel) return;
+  const groups = d.groups || {};
+  const keys   = Object.keys(groups);
+  if (keys.length === 0) {
+    wrap.style.display = 'none';
+    none.style.display = 'inline-block';
+    return;
+  }
+  none.style.display = 'none';
+  wrap.style.display = 'flex';
+  sel.innerHTML = '';
+  keys.forEach(k => {
+    const opt = document.createElement('option');
+    opt.value = k;
+    opt.textContent = k;
+    if (k === d.activeGroup) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  if (dot) dot.style.background = getGroupColor(d.activeGroup, d);
+}
+
+function switchGroup(groupId) {
+  const d = load();
+  if (!d.groups[groupId]) return;
+  d.activeGroup = groupId;
+  save(d);
+  const dot = document.getElementById('groupDot');
+  if (dot) dot.style.background = getGroupColor(groupId, d);
+  const activePage = document.querySelector('.page.active');
+  if (activePage) showPage(activePage.id.replace('page-', ''));
 }
 
 // ── Permission helpers ─────────────────────────────────────
@@ -2290,8 +2366,6 @@ function doLogin() {
   const tabAnalytics = document.getElementById('tab-analytics');
   const tabAdmin = document.getElementById('tab-admin');
   const tabStudents = document.getElementById('tab-students');
-  const mnAnalytics = document.getElementById('mn-analytics');
-  const mnAdmin = document.getElementById('mn-admin');
 
   if (isAdmin()) {
     badge.textContent = 'ADMIN';
@@ -2301,8 +2375,6 @@ function doLogin() {
     badge.style.borderColor = 'rgba(168,85,247,0.3)';
     tabAnalytics.style.display = 'flex';
     tabAdmin.style.display = 'flex';
-    if (mnAnalytics) mnAnalytics.style.display = 'flex';
-    if (mnAdmin) mnAdmin.style.display = 'flex';
   } else if (isTeamLead()) {
     badge.textContent = 'TEAM LEAD';
     badge.style.display = 'inline-flex';
@@ -2311,14 +2383,10 @@ function doLogin() {
     badge.style.borderColor = 'rgba(6,182,212,0.3)';
     tabAnalytics.style.display = 'none';
     tabAdmin.style.display = 'none';
-    if (mnAnalytics) mnAnalytics.style.display = 'none';
-    if (mnAdmin) mnAdmin.style.display = 'none';
   } else {
     badge.style.display = 'none';
     tabAnalytics.style.display = 'none';
     tabAdmin.style.display = 'none';
-    if (mnAnalytics) mnAnalytics.style.display = 'none';
-    if (mnAdmin) mnAdmin.style.display = 'none';
   }
   if (tabStudents) tabStudents.style.display = 'flex';
   initApp();
@@ -2342,12 +2410,9 @@ function doLogout() {
 function showPage(id) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nt').forEach(t=>t.classList.remove('active'));
-  document.querySelectorAll('.mn-item').forEach(t=>t.classList.remove('active'));
   document.getElementById('page-'+id).classList.add('active');
   const tab = document.getElementById('tab-'+id);
   if (tab) tab.classList.add('active');
-  const mn = document.getElementById('mn-'+id);
-  if (mn) mn.classList.add('active');
   if (id==='schedule')   renderSched();
   if (id==='attendance') renderPicker();
   if (id==='reports')    renderReports();
@@ -2359,6 +2424,7 @@ function showPage(id) {
 }
 
 function initApp() {
+  refreshGroupSelector();
   updateAlertToggleUI();
   checkAlert();
   checkArchive();
@@ -2410,18 +2476,20 @@ function updateAlertToggleUI() {
 function checkAlert() {
   if (!isSmartAlertOn()) return;
   const d = load();
-  if (!d.schedule.length) return;
+  const schedule = getActiveSchedule(d);
+  const courses  = getActiveCourses(d);
+  if (!schedule.length) return;
   const now = new Date();
   const dayIdx = now.getDay();
 
-  for (const s of d.schedule) {
+  for (const s of schedule) {
     if (s.day !== dayIdx) continue;
     const [sh, sm] = s.time.split(':').map(Number);
     const slotMins = sh*60+sm;
     const nowMins = now.getHours()*60+now.getMinutes();
     const diff = slotMins - nowMins;
     if (diff >= 0 && diff <= 30) {
-      const c = d.courses[s.courseCode];
+      const c = courses[s.courseCode];
       if (!c) continue;
       document.getElementById('alertText').textContent =
         `🔔 ${c.code} — ${c.name} starts in ${diff===0?'now!':diff+' min'} · Room ${c.room}`;
@@ -2453,15 +2521,58 @@ function getWeekNum() {
   return diff>=0 && diff<d.term.weeks ? diff+1 : null;
 }
 
+// وضع عرض الجدول: 'merged' (كل المجموعات) أو 'single' (النشطة فقط)
+let _schedView = 'merged';
+
+function setSchedView(mode) {
+  _schedView = mode;
+  document.querySelectorAll('.svt').forEach(b => b.classList.remove('active'));
+  const btn = document.getElementById('svt-' + mode);
+  if (btn) btn.classList.add('active');
+  renderSched();
+}
+
 function renderSched() {
-  const d = load();
+  const d       = load();
+  const groups  = d.groups || {};
+  const gKeys   = Object.keys(groups);
+  const groupId = d.activeGroup;
+
   const sun = getSun(weekOff);
   const thu = new Date(sun); thu.setDate(sun.getDate()+4);
   document.getElementById('weekLabel').textContent = `${fmtDate(sun)} – ${fmtDate(thu)}`;
   const wn = getWeekNum();
   document.getElementById('weekNum').textContent = wn ? `Week ${wn} of ${d.term.weeks}` : '';
 
-  if (!Object.keys(d.courses).length || !d.schedule.length) {
+  // إظهار/إخفاء toggle بناءً على عدد المجموعات
+  const toggle = document.getElementById('schedViewToggle');
+  if (toggle) toggle.style.display = gKeys.length > 1 ? 'flex' : 'none';
+
+  // ── تجميع المحتوى حسب وضع العرض ──────────────────────
+  let allSlots = []; // { day, time, courseCode, groupId, color }
+
+  if (_schedView === 'merged' && gKeys.length > 1) {
+    // كل المجموعات في جدول واحد
+    gKeys.forEach(gid => {
+      const g = groups[gid];
+      const color = getGroupColor(gid, d);
+      (g.schedule || []).forEach(s => {
+        allSlots.push({ ...s, groupId: gid, color,
+          course: (g.courses || {})[s.courseCode] });
+      });
+    });
+  } else {
+    // المجموعة النشطة فقط
+    const courses  = getActiveCourses(d);
+    const schedule = getActiveSchedule(d);
+    schedule.forEach(s => {
+      allSlots.push({ ...s, groupId,
+        color: courses[s.courseCode]?.color || 'var(--accent)',
+        course: courses[s.courseCode] });
+    });
+  }
+
+  if (!allSlots.length) {
     document.getElementById('schedNoData').style.display='block';
     document.getElementById('schedWrap').style.display='none';
     return;
@@ -2469,30 +2580,75 @@ function renderSched() {
   document.getElementById('schedNoData').style.display='none';
   document.getElementById('schedWrap').style.display='block';
 
-  const times = [...new Set(d.schedule.map(s=>s.time))].sort();
-  let thead = '<tr><th>Day / Date</th>'+times.map(t=>`<th>${t}</th>`).join('')+'</tr>';
+  // ── بناء الجدول ────────────────────────────────────────
+  const times = [...new Set(allSlots.map(s=>s.time))].sort();
+
+  // في وضع مدمج: أضف legend لألوان المجموعات
+  let legendHtml = '';
+  if (_schedView === 'merged' && gKeys.length > 1) {
+    legendHtml = `<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px;align-items:center;">
+      <span style="font-size:0.68rem;color:var(--text3);font-weight:600;">Groups:</span>
+      ${gKeys.map(gid => `
+        <span onclick="switchGroup('${gid}')" style="cursor:pointer;display:flex;align-items:center;gap:5px;
+          padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:600;
+          background:${getGroupColor(gid,d)}18;border:1px solid ${getGroupColor(gid,d)}40;
+          color:${getGroupColor(gid,d)};${gid===groupId?'border-width:2px;':''}">
+          <span style="width:7px;height:7px;border-radius:50%;background:${getGroupColor(gid,d)};"></span>
+          ${gid}${gid===groupId?' ●':''}
+        </span>`).join('')}
+    </div>`;
+  }
+
+  const headerLabel = _schedView==='single' && groupId
+    ? ` <span style="font-size:0.7rem;color:var(--accent);font-weight:600;margin-right:4px;
+         padding:2px 8px;background:rgba(59,130,246,0.1);border-radius:10px;">${groupId}</span>`
+    : '';
+  let thead = `<tr><th>Day / Date${headerLabel}</th>`+times.map(t=>`<th>${t}</th>`).join('')+'</tr>';
   let tbody = '';
-  for (let i=0;i<5;i++) {
+
+  for (let i=0; i<5; i++) {
     const day = new Date(sun); day.setDate(sun.getDate()+i);
     const isToday = day.toDateString()===new Date().toDateString();
-    let row = `<td class="day-cell ${isToday?'today':''}"><div class="day-name">${DAYS[i]}</div><div class="day-date">${fmtDate(day)}</div></td>`;
+    let row = `<td class="day-cell ${isToday?'today':''}">
+      <div class="day-name">${DAYS[i]}</div>
+      <div class="day-date">${fmtDate(day)}</div>
+    </td>`;
+
     for (const t of times) {
-      const slot = d.schedule.find(s=>s.day===i && s.time===t);
-      if (slot && d.courses[slot.courseCode]) {
-        const c = d.courses[slot.courseCode];
-        row += `<td><div class="chip" style="background:${c.color}15;border-color:${c.color}40"
-          onclick="openCourseAtt('${slot.courseCode}')">
-          <div class="chip-code" style="color:${c.color}">${c.code}</div>
+      // في وضع مدمج: ممكن مجموعات متعددة في نفس الخلية
+      const daySlots = allSlots.filter(s => s.day===i && s.time===t && s.course);
+      if (!daySlots.length) {
+        row += '<td class="slot-empty"></td>';
+        continue;
+      }
+      // بناء chips داخل الخلية
+      const chips = daySlots.map(slot => {
+        const c = slot.course;
+        const isActive = slot.groupId === groupId;
+        return `<div class="chip" style="background:${slot.color}15;border-color:${slot.color}${isActive?'80':'30'};
+          opacity:${isActive?'1':'0.7'};"
+          onclick="switchGroup('${slot.groupId}');openCourseAtt('${slot.courseCode}')">
+          ${_schedView==='merged' && gKeys.length>1
+            ? `<div style="font-size:0.6rem;color:${slot.color};font-weight:700;margin-bottom:1px;">${slot.groupId}</div>`
+            : ''}
+          <div class="chip-code" style="color:${slot.color}">${c.code}</div>
           <div class="chip-name">${c.name}</div>
           <div class="chip-room">📍 ${c.room}</div>
-        </div></td>`;
-      } else {
-        row += '<td class="slot-empty"></td>';
-      }
+        </div>`;
+      }).join('');
+      row += `<td>${chips}</td>`;
     }
     tbody += `<tr>${row}</tr>`;
   }
-  document.getElementById('schedTbl').innerHTML = `<thead>${thead}</thead><tbody>${tbody}</tbody>`;
+
+  document.getElementById('schedWrap').innerHTML =
+    legendHtml +
+    `<div class="sched-wrap" style="overflow-x:auto;">
+       <table class="sched-tbl" id="schedTbl">
+         <thead>${thead}</thead>
+         <tbody>${tbody}</tbody>
+       </table>
+     </div>`;
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2509,11 +2665,13 @@ function renderSetup() {
   renderCourseList();
   renderSchedEntries();
   renderRosterStatus();
-  // Mark done states
-  if (Object.keys(d.courses).length > 0) {
+  // Mark done states — بناءً على المجموعات الموجودة
+  const activeCourses = getActiveCourses(d);
+  if (Object.keys(activeCourses).length > 0) {
     markDone('sn2');
-    if (Object.values(d.courses).some(c => c.students && c.students.length > 0)) markDone('sn3');
+    if (Object.values(activeCourses).some(c => c.students && c.students.length > 0)) markDone('sn3');
   }
+  renderExistingGroupChips();
 }
 
 function updateTermDates() {
@@ -2566,19 +2724,72 @@ function loadUniversitySchedule(input) {
     const autoSheet = sheets.find(s => s !== 'Sheet1' && s !== 'Sheet2') || sheets[0];
     if (sheets.length === 1) {
       sel.value = autoSheet;
-      parseScheduleSheet();
+      onSheetSelected();
     }
     document.getElementById('sheetSelectorWrap').style.display = 'block';
     document.getElementById('schedExcelLabel').textContent = '✅ ' + file.name;
     document.getElementById('schedExcelZone').classList.add('loaded');
     input.value = '';
+    renderExistingGroupChips();
   };
   reader.readAsArrayBuffer(file);
 }
 
+// عند اختيار شيت — تعبئة اسم المجموعة تلقائياً من ترويسة الشيت
+function onSheetSelected() {
+  const sel = document.getElementById('sheetSelector');
+  const sheetName = sel.value;
+  if (!sheetName || !_uniWB) return;
+
+  // قراءة أول خلية غير فارغة في أول صفين — قد تحوي اسم المجموعة
+  const ws  = _uniWB.Sheets[sheetName];
+  const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
+  let detectedName = '';
+  for (let r = 0; r < Math.min(3, raw.length); r++) {
+    const row = raw[r];
+    if (!row) continue;
+    for (let c = 0; c < row.length; c++) {
+      const val = row[c] ? String(row[c]).trim() : '';
+      // اسم المجموعة عادةً 2-6 أحرف كبيرة (MAB, MAA, RPT1…)
+      if (val && /^[A-Z]{2,6}\d*$/.test(val)) {
+        detectedName = val;
+        break;
+      }
+    }
+    if (detectedName) break;
+  }
+
+  const inp = document.getElementById('groupNameInput');
+  const btn = document.getElementById('loadGroupBtn');
+  if (inp && detectedName && !inp.value) inp.value = detectedName;
+  if (btn) btn.disabled = false;
+  renderExistingGroupChips();
+}
+
+// عرض المجموعات الموجودة كـ chips قابلة للضغط (لاختيار الاسم سريعاً)
+function renderExistingGroupChips() {
+  const container = document.getElementById('existingGroupChips');
+  if (!container) return;
+  const d = load();
+  const keys = Object.keys(d.groups || {});
+  if (keys.length === 0) { container.innerHTML = ''; return; }
+  container.innerHTML = keys.map(k =>
+    `<span onclick="document.getElementById('groupNameInput').value='${k}';document.getElementById('loadGroupBtn').disabled=false;"
+      style="padding:3px 10px;border-radius:12px;font-size:0.72rem;font-weight:600;cursor:pointer;
+             background:rgba(59,130,246,0.12);border:1px solid rgba(59,130,246,0.3);color:var(--accent);">
+      ${k}
+    </span>`
+  ).join('');
+}
+
+// ─────────────────────────────────────────────────────────
 function parseScheduleSheet() {
   const sheetName = document.getElementById('sheetSelector').value;
   if (!sheetName || !_uniWB) return;
+
+  // اسم المجموعة — إلزامي
+  const groupNameRaw = (document.getElementById('groupNameInput')?.value || '').trim();
+  const groupId = groupNameRaw || 'Group 1';
 
   const ws = _uniWB.Sheets[sheetName];
   const raw = XLSX.utils.sheet_to_json(ws, {header:1, defval:null});
@@ -2646,28 +2857,50 @@ function parseScheduleSheet() {
           name: name.replace(/\s+for\s+(AMS|Applied Medical.*?)$/i, '').trim(),
           room: room.includes('S-') || room.includes('N-') ? room : (lines.find(l => l.match(/^[SN]-[A-Z]\d+/)) || room),
           color: COLORS[ci2],
-          students: d.courses[code] ? d.courses[code].students : []
+          students: (d.groups?.[groupId]?.courses?.[code] || d.courses[code])?.students || []
         };
       }
     });
   }
 
-  // Merge with existing courses (keep student rosters)
+  // ── حفظ في المجموعة المحددة ──────────────────────────────
+  if (!d.groups) d.groups = {};
+
+  // الدمج مع مواد المجموعة الموجودة (للحفاظ على قوائم الطلاب)
+  const existingGroup = d.groups[groupId] || { courses:{}, schedule:[] };
   Object.keys(newCourses).forEach(code => {
-    if (d.courses[code]) newCourses[code].students = d.courses[code].students;
-    d.courses[code] = newCourses[code];
+    if (existingGroup.courses[code]) {
+      newCourses[code].students = existingGroup.courses[code].students;
+    }
   });
 
-  // Replace schedule
-  d.schedule = newSchedule.sort((a,b) => a.day-b.day || a.time.localeCompare(b.time));
-  save(d);
+  d.groups[groupId] = {
+    courses:  { ...existingGroup.courses, ...newCourses },
+    schedule: newSchedule.sort((a,b) => a.day-b.day || a.time.localeCompare(b.time))
+  };
 
+  // تعيين المجموعة النشطة إذا لم تكن محددة
+  if (!d.activeGroup) d.activeGroup = groupId;
+
+  // تحديث الحقول القديمة للـ courses/schedule للتوافق (نشطة فقط)
+  if (d.activeGroup === groupId) {
+    d.courses  = d.groups[groupId].courses;
+    d.schedule = d.groups[groupId].schedule;
+  }
+
+  save(d);
+  refreshGroupSelector();
   renderCourseList();
   renderSchedEntries();
   renderRosterStatus();
   markDone('sn2');
 
-  alert('✅ ' + Object.keys(newCourses).length + ' courses and ' + newSchedule.length + ' schedule slots loaded!');
+  // مسح حقل الاسم استعداداً لمجموعة ثانية
+  const inp = document.getElementById('groupNameInput');
+  if (inp) inp.value = '';
+  renderExistingGroupChips();
+
+  alert('✅ Group "' + groupId + '": ' + Object.keys(newCourses).length + ' courses, ' + newSchedule.length + ' slots loaded!');
 }
 
 // ── SIS Roster Parser (Excel + PDF) ───────────────────────
@@ -2807,7 +3040,7 @@ function renderRosterQueue() {
       <div style="display:flex;gap:8px;align-items:center;">
         <select class="input" id="rosterAssign_${idx}" style="flex:1;">
           <option value="">— Assign to course —</option>
-          ${keys.map(k=>`<option value="${k}">${d.courses[k].code} — ${d.courses[k].name}</option>`).join('')}
+          ${keys.map(k=>`<option value="${k}">${courses[k].code} — ${courses[k].name}</option>`).join('')}
         </select>
         <button class="btn btn-success" onclick="saveQueueItem(${idx})">✓ Save</button>
         <button class="btn btn-danger" onclick="removeQueueItem(${idx})" style="padding:6px 10px;">✕</button>
@@ -2820,7 +3053,13 @@ function saveQueueItem(idx) {
   const code = sel ? sel.value : '';
   if (!code) { alert('Select a course first.'); return; }
   const d = load();
-  d.courses[code].students = _rosterQueue[idx].students;
+  const gid = d.activeGroup;
+  if (gid && d.groups && d.groups[gid] && d.groups[gid].courses[code]) {
+    d.groups[gid].courses[code].students = _rosterQueue[idx].students;
+    d.courses = d.groups[gid].courses;
+  } else {
+    if (d.courses[code]) d.courses[code].students = _rosterQueue[idx].students;
+  }
   save(d);
   _rosterQueue.splice(idx, 1);
   renderRosterQueue();
@@ -2830,7 +3069,8 @@ function saveQueueItem(idx) {
     document.getElementById('rosterZone').classList.remove('loaded');
     markDone('sn3');
   }
-  alert(`✅ ${d.courses[code].students.length} students saved to ${code}`);
+  const cnt = gid && d.groups?.[gid]?.courses?.[code]?.students?.length || d.courses?.[code]?.students?.length || 0;
+  alert(`✅ ${cnt} students saved to ${code}`);
 }
 
 function removeQueueItem(idx) {
@@ -2844,11 +3084,12 @@ function removeQueueItem(idx) {
 
 function renderRosterStatus() {
   const d = load();
+  const courses = getActiveCourses(d);
   const el = document.getElementById('rosterStatusList');
-  const keys = Object.keys(d.courses);
+  const keys = Object.keys(courses);
   if (!keys.length) { el.innerHTML='<div class="empty" style="padding:10px;font-size:0.75rem;">Upload schedule first (Step 2)</div>'; return; }
   el.innerHTML = keys.map(k => {
-    const c = d.courses[k];
+    const c = courses[k];
     const hasRoster = c.students && c.students.length > 0;
     return `<div class="ci">
       <div class="ci-dot" style="background:${hasRoster?'var(--green)':'var(--text3)'}"></div>
@@ -2862,11 +3103,13 @@ function renderRosterStatus() {
 }
 
 function renderCourseList() {
-  const d = load(); const el = document.getElementById('courseList');
-  const keys = Object.keys(d.courses);
+  const d = load();
+  const courses = getActiveCourses(d);
+  const el = document.getElementById('courseList');
+  const keys = Object.keys(courses);
   if (!keys.length) { el.innerHTML='<div class="empty" style="padding:10px;font-size:0.75rem;">No courses loaded yet</div>'; return; }
   el.innerHTML = keys.map(k => {
-    const c = d.courses[k];
+    const c = courses[k];
     return `<div class="ci">
       <div class="ci-dot" style="background:${c.color}"></div>
       <div class="ci-code">${c.code}</div>
@@ -2879,8 +3122,15 @@ function renderCourseList() {
 
 function delCourse(code) {
   if (!confirm(`Remove ${code}?`)) return;
-  const d = load(); delete d.courses[code];
-  d.schedule = d.schedule.filter(s=>s.courseCode!==code);
+  const d = load();
+  const gid = d.activeGroup;
+  if (gid && d.groups && d.groups[gid]) {
+    delete d.groups[gid].courses[code];
+    d.groups[gid].schedule = d.groups[gid].schedule.filter(s=>s.courseCode!==code);
+  }
+  // sync flat fields
+  d.courses  = getActiveCourses(d);
+  d.schedule = getActiveSchedule(d);
   save(d); renderCourseList(); renderSchedEntries();
 }
 
@@ -2896,10 +3146,12 @@ function dlTemplate() {
 }
 
 function renderSchedCoursePicker() {
-  const d = load(); const sel = document.getElementById('sbCourse');
+  const d = load();
+  const courses = getActiveCourses(d);
+  const sel = document.getElementById('sbCourse');
   sel.innerHTML = '<option value="">— Select course —</option>';
-  Object.keys(d.courses).forEach(k=>{
-    sel.innerHTML += `<option value="${k}">${d.courses[k].code} — ${d.courses[k].name}</option>`;
+  Object.keys(courses).forEach(k=>{
+    sel.innerHTML += `<option value="${k}">${courses[k].code} — ${courses[k].name}</option>`;
   });
 }
 
@@ -2909,20 +3161,28 @@ function addSched() {
   const code=document.getElementById('sbCourse').value;
   if (!time||!code) { alert('Please fill in all fields.'); return; }
   const d=load();
-  if (d.schedule.find(s=>s.day===day&&s.time===time)) { alert('This time slot is already taken.'); return; }
-  d.schedule.push({day,time,courseCode:code});
-  d.schedule.sort((a,b)=>a.day-b.day||a.time.localeCompare(b.time));
+  const gid = d.activeGroup;
+  const schedule = getActiveSchedule(d);
+  if (schedule.find(s=>s.day===day&&s.time===time)) { alert('This time slot is already taken.'); return; }
+  if (gid && d.groups && d.groups[gid]) {
+    d.groups[gid].schedule.push({day,time,courseCode:code});
+    d.groups[gid].schedule.sort((a,b)=>a.day-b.day||a.time.localeCompare(b.time));
+    d.schedule = d.groups[gid].schedule;
+  }
   save(d); renderSchedEntries(); markDone('sn3');
 }
 
 function renderSchedEntries() {
-  const d=load(); const c=document.getElementById('schedEntries');
+  const d = load();
+  const courses  = getActiveCourses(d);
+  const schedule = getActiveSchedule(d);
+  const c = document.getElementById('schedEntries');
   renderSchedCoursePicker();
-  if (!d.schedule.length) {
+  if (!schedule.length) {
     c.innerHTML='<div class="empty" style="padding:10px;font-size:0.75rem;" id="schedEmpty">No schedule entries yet</div>'; return;
   }
-  c.innerHTML = d.schedule.map((s,i)=>{
-    const co = d.courses[s.courseCode]; if (!co) return '';
+  c.innerHTML = schedule.map((s,i)=>{
+    const co = courses[s.courseCode]; if (!co) return '';
     return `<div class="sched-entry">
       <span class="se-day">${DAYS[s.day]}</span>
       <span class="se-time">${s.time}</span>
@@ -2933,13 +3193,39 @@ function renderSchedEntries() {
 }
 
 function delSched(i) {
-  const d=load(); d.schedule.splice(i,1); save(d); renderSchedEntries();
+  const d = load();
+  const gid = d.activeGroup;
+  if (gid && d.groups && d.groups[gid]) {
+    d.groups[gid].schedule.splice(i,1);
+    d.schedule = d.groups[gid].schedule;
+  } else {
+    d.schedule.splice(i,1);
+  }
+  save(d); renderSchedEntries();
 }
 
 function confirmClear() {
-  if (!confirm('Clear all courses, schedule, and sessions for this term?')) return;
-  const d=load(); d.courses={}; d.schedule=[]; d.sessions=[]; d.term={start:null,weeks:16};
-  save(d); renderSetup(); renderSched(); renderPicker(); alert('✅ Term data cleared.');
+  const d = load();
+  const gid = d.activeGroup;
+  const msg = gid
+    ? `Clear all data for group "${gid}"? (courses, schedule, sessions)`
+    : 'Clear all courses, schedule, and sessions for this term?';
+  if (!confirm(msg)) return;
+  if (gid && d.groups && d.groups[gid]) {
+    // مسح المجموعة النشطة فقط
+    delete d.groups[gid];
+    const remaining = Object.keys(d.groups);
+    d.activeGroup = remaining.length ? remaining[0] : null;
+    d.courses  = getActiveCourses(d);
+    d.schedule = getActiveSchedule(d);
+    // مسح جلسات هذه المجموعة
+    d.sessions = (d.sessions||[]).filter(s => s.groupId !== gid);
+  } else {
+    d.courses={}; d.schedule=[]; d.sessions=[]; d.term={start:null,weeks:16};
+    d.groups={}; d.activeGroup=null;
+  }
+  save(d); refreshGroupSelector(); renderSetup(); renderSched(); renderPicker();
+  alert('✅ Data cleared.');
 }
 
 // ══════════════════════════════════════════════════════════
@@ -2949,20 +3235,31 @@ let CK=null, manAbs=new Set(), excused=new Map(), sasData=[], timerInt=null, tim
 let _attMode = 'manual'; // 'manual' | 'electronic' | 'latemanual'
 
 function renderPicker() {
-  const d=load(); const grid=document.getElementById('coursePickGrid');
-  const empty=document.getElementById('coursePickEmpty');
-  const keys=Object.keys(d.courses);
+  const d       = load();
+  const courses = getActiveCourses(d);
+  const groupId = d.activeGroup;
+  const grid    = document.getElementById('coursePickGrid');
+  const empty   = document.getElementById('coursePickEmpty');
+  const keys    = Object.keys(courses);
+
   if (!keys.length) { grid.style.display='none'; empty.style.display='block'; return; }
   grid.style.display='grid'; empty.style.display='none';
 
-  // Count sessions per course
+  // Count sessions per course — فقط جلسات المجموعة النشطة
   const sessionCounts = {};
-  (d.sessions||[]).forEach(s => {
-    sessionCounts[s.courseCode] = (sessionCounts[s.courseCode]||0) + 1;
-  });
+  (d.sessions||[]).filter(s => !groupId || !s.groupId || s.groupId === groupId)
+    .forEach(s => { sessionCounts[s.courseCode] = (sessionCounts[s.courseCode]||0) + 1; });
 
-  grid.innerHTML=keys.map(k=>{
-    const c=d.courses[k];
+  // عنوان البطاقة: اسم المجموعة النشطة
+  const groupLabel = groupId
+    ? `<div style="font-size:0.7rem;color:var(--text3);margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+        <span style="width:8px;height:8px;border-radius:50%;background:${getGroupColor(groupId,d)};display:inline-block;"></span>
+        ${groupId}
+       </div>`
+    : '';
+
+  grid.innerHTML = groupLabel + keys.map(k=>{
+    const c = courses[k];
     const sessCount = sessionCounts[k] || 0;
     return `<div class="ci" style="cursor:pointer;border-right:3px solid ${c.color};position:relative;" onclick="showCourseHistory('${k}')">
       <div class="ci-dot" style="background:${c.color}"></div>
@@ -2981,7 +3278,7 @@ function renderPicker() {
   const sel = document.getElementById('prevSessionsCourseFilter');
   if (sel) {
     sel.innerHTML = '<option value="">All Courses</option>' +
-      keys.map(k => `<option value="${k}">${d.courses[k].code}</option>`).join('');
+      keys.map(k => `<option value="${k}">${courses[k].code}</option>`).join('');
   }
 }
 
@@ -3070,7 +3367,7 @@ function getScheduledLectureCount(courseCode) {
   const d = load();
   const totalWeeks = d.term?.weeks || 16;
   // Count how many times this course appears in the weekly schedule
-  const lecturesPerWeek = (d.schedule||[]).filter(s => s.courseCode === courseCode).length;
+  const lecturesPerWeek = getActiveSchedule(d).filter(s => s.courseCode === courseCode).length;
   return lecturesPerWeek * totalWeeks;
 }
 
@@ -3086,7 +3383,7 @@ function editSession(sessionIdx) {
   if (!s) return;
 
   // Restore state from session
-  const c = d.courses[s.courseCode];
+  const c = getActiveCourses(d)[s.courseCode] || getCourse(s.courseCode);
   if (!c) { alert('Course not found.'); return; }
 
   CK = s.courseCode;
@@ -3171,13 +3468,16 @@ let _rosterCourseKey = null;
 function showRosterSummary(key) {
   _rosterCourseKey = key;
   const d = load();
-  const c = d.courses[key];
+  const c = getActiveCourses(d)[key] || getCourse(key);
   if (!c) return;
 
   document.getElementById('rosterCourseLabel').textContent = `${c.code} — ${c.name}`;
 
-  // Populate session filter
-  const sessions = (d.sessions||[]).filter(s => s.courseCode === key);
+  // Populate session filter — فقط جلسات المجموعة النشطة
+  const groupId = d.activeGroup;
+  const sessions = (d.sessions||[]).filter(s =>
+    s.courseCode === key && (!groupId || !s.groupId || s.groupId === groupId)
+  );
   const sel = document.getElementById('rosterSessionFilter');
   if (sel) {
     sel.innerHTML = '<option value="">All Sessions (aggregate)</option>' +
@@ -3199,12 +3499,15 @@ function hideRosterSummary() {
 function renderRosterTable() {
   if (!_rosterCourseKey) return;
   const d = load();
-  const c = d.courses[_rosterCourseKey];
+  const c = getActiveCourses(d)[_rosterCourseKey] || getCourse(_rosterCourseKey);
   if (!c || !c.students) return;
 
   const sessFilter = document.getElementById('rosterSessionFilter')?.value;
+  const groupId = d.activeGroup;
   const sessions = (d.sessions||[]).filter((s,i) =>
-    s.courseCode === _rosterCourseKey && (sessFilter === '' || String((d.sessions||[]).indexOf(s)) === sessFilter)
+    s.courseCode === _rosterCourseKey
+    && (!groupId || !s.groupId || s.groupId === groupId)
+    && (sessFilter === '' || String((d.sessions||[]).indexOf(s)) === sessFilter)
   );
 
   const showAccuracy = isAdmin();
@@ -3296,12 +3599,18 @@ let _viewingSessionIdx = null; // which session is being viewed
 function showCourseHistory(key) {
   _historyCourseKey = key;
   const d = load();
-  const c = d.courses[key];
+  const c = getActiveCourses(d)[key] || getCourse(key);
   if (!c) return;
+  const groupId = d.activeGroup;
 
-  // Update header
+  // Update header — يشمل اسم المجموعة
   const nameEl = document.getElementById('prevSessionsCourseName');
-  if (nameEl) nameEl.textContent = c.code + ' — ' + c.name;
+  if (nameEl) {
+    const groupTag = groupId
+      ? ` <span style="font-size:0.7rem;padding:2px 8px;border-radius:10px;background:rgba(59,130,246,0.12);color:var(--accent);font-weight:600;">${groupId}</span>`
+      : '';
+    nameEl.innerHTML = c.code + ' — ' + c.name + groupTag;
+  }
 
   // Set filter
   const sel = document.getElementById('prevSessionsCourseFilter');
@@ -3329,9 +3638,12 @@ function renderPrevSessions() {
   const list = document.getElementById('prevSessionsList');
   if (!list) return;
 
+  const groupId = d.activeGroup;
   let sessions = d.sessions || [];
   const indexed = sessions.map((s, i) => ({...s, _idx: i}));
-  let filtered = filterKey ? indexed.filter(s => s.courseCode === filterKey) : indexed;
+  // فلترة بالمجموعة النشطة أولاً، ثم بالمادة
+  let filtered = indexed.filter(s => !groupId || !s.groupId || s.groupId === groupId);
+  if (filterKey) filtered = filtered.filter(s => s.courseCode === filterKey);
   filtered = [...filtered].sort((a,b) => b.date.localeCompare(a.date) || (b.time||'').localeCompare(a.time||''));
 
   const TYPE_ICON = { manual:'✅', electronic:'⚡', latemanual:'📋' };
@@ -3494,7 +3806,10 @@ function closeSessionView() {
 
 
 function openCourseAtt(key) {
-  const d=load(); const c=d.courses[key]; if (!c) return;
+  const d=load();
+  const c=getActiveCourses(d)[key] || getCourse(key);
+  if (!c) return;
+  const groupId = d.activeGroup;
   CK=key; manAbs.clear(); excused.clear(); sasData=[];
   document.getElementById('sasZone').classList.remove('loaded');
   document.getElementById('sasLabel').textContent='Click or drag SAS Excel file here';
@@ -3509,7 +3824,9 @@ function openCourseAtt(key) {
   _editingSessionIdx = null;
   setAttMode('manual');
   _electronicOnlyMode = false;
-  document.getElementById('attTitle').textContent=`${c.code} — ${c.name}`;
+  // الهيدر: اسم المادة — اسم المجموعة
+  const groupSuffix = groupId ? ` — ${groupId}` : '';
+  document.getElementById('attTitle').textContent=`${c.code} — ${c.name}${groupSuffix}`;
   document.getElementById('attSub').textContent=`${c.students.length} students`;
   document.getElementById('attRoom').textContent=`📍 ${c.room}`;
   document.getElementById('courseSelector').style.display='none';
@@ -3538,7 +3855,7 @@ function closeAtt() {
   } else if (backKey) {
     _historyCourseKey = backKey;
     const d = load();
-    const c = d.courses[backKey];
+    const c = getActiveCourses(d)[backKey] || getCourse(backKey);
     const nameEl = document.getElementById('prevSessionsCourseName');
     if (nameEl && c) nameEl.textContent = c.code + ' — ' + c.name;
     const sel = document.getElementById('prevSessionsCourseFilter');
@@ -3571,7 +3888,7 @@ function pauseTimer() {
 function stopTimer() { clearInterval(timerInt); timerInt=null; }
 
 function renderAttGrid(filter='') {
-  const d=load(); const c=d.courses[CK]; if (!c) return;
+  const d=load(); const c=getActiveCourses(d)[CK]||getCourse(CK); if (!c) return;
   const q=filter.trim().toLowerCase();
   const list=c.students.filter(s=>!q||s.name.toLowerCase().includes(q)||String(s.seat).includes(q));
   const editMode = _editingSessionIdx !== null;
@@ -3607,7 +3924,7 @@ function renderAttGrid(filter='') {
 function filterAtt() { renderAttGrid(document.getElementById('attSearch').value); }
 function toggleAbs(id) { manAbs.has(id)?manAbs.delete(id):manAbs.add(id); renderAttGrid(document.getElementById('attSearch').value); }
 function markAll(present) {
-  const d=load(); const c=d.courses[CK]; if (!c) return;
+  const d=load(); const c=getActiveCourses(d)[CK]||getCourse(CK); if (!c) return;
   if (present) manAbs.clear(); else c.students.forEach(s=>manAbs.add(s.campusId));
   renderAttGrid(document.getElementById('attSearch').value);
 }
@@ -3616,7 +3933,7 @@ function markAll(present) {
 // ══════════════════════════════════════════════════════════
 function removeAbsence(campusId) {
   const d = load();
-  const c = d.courses[CK];
+  const c = getActiveCourses(d)[CK]||getCourse(CK);
   const stu = c?.students?.find(s => s.campusId === campusId);
   const name = stu?.name || campusId;
 
@@ -3666,7 +3983,7 @@ function loadSAS(file) {
 }
 
 function runMatch() {
-  const d=load(); const c=d.courses[CK];
+  const d=load(); const c=getActiveCourses(d)[CK]||getCourse(CK);
   const sasMap={};
   sasData.forEach(r=>sasMap[r.campusId]=r.status.toLowerCase().includes('absent'));
   const absents=[],escapers=[],noApp=[],excusedList=[];
@@ -3787,6 +4104,7 @@ function saveSessionData(absents,escapers,noApp,excusedList,c,coveredBy='') {
   const sessionObj = {
     date: new Date().toISOString().split('T')[0],
     time: new Date().toTimeString().slice(0,5),
+    groupId: d.activeGroup || null,
     courseCode: CK,
     courseName: c.name,
     staff: CU.username,
@@ -3868,13 +4186,25 @@ function renderReports() {
   let html = '';
   if (myKeys.length) {
     html += `<div style="font-size:0.68rem;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:0.4px;padding:4px 6px;">My Courses</div>`;
-    html += myKeys.map(k => {
+    // تجميع المواد حسب المجموعة
+    const byGroup = {};
+    myKeys.forEach(k => {
       const c = allCourses[k];
-      return `<button class="rcb ${rptCourse===k?'active':''}" onclick="selRptCourse('${k}')">
-        <span style="color:${c.color};font-family:var(--mono);font-size:0.7rem;">${c.code}</span><br>
-        <span style="font-size:0.77rem;">${c.name}</span>
-      </button>`;
-    }).join('');
+      const gid = c._groupId || '—';
+      if (!byGroup[gid]) byGroup[gid] = [];
+      byGroup[gid].push({k, c});
+    });
+    Object.entries(byGroup).forEach(([gid, items]) => {
+      if (Object.keys(byGroup).length > 1) {
+        html += `<div style="font-size:0.65rem;color:var(--text3);padding:4px 6px 2px;margin-top:4px;">${gid}</div>`;
+      }
+      html += items.map(({k, c}) =>
+        `<button class="rcb ${rptCourse===k?'active':''}" onclick="selRptCourse('${k}')">
+          <span style="color:${c.color};font-family:var(--mono);font-size:0.7rem;">${c.code}</span><br>
+          <span style="font-size:0.77rem;">${c.name}</span>
+        </button>`
+      ).join('');
+    });
   }
 
   if (otherKeys.length) {
@@ -3928,8 +4258,13 @@ function renderRptPreview() {
   const c = getCourse(rptCourse); if (!c) return;
   const { owner } = resolveCourseKey(rptCourse);
   const labels={attendance:'Attendance Sheet',monthly:'Monthly Exam Sheet',final:'Final Exam Sheet'};
+  // اسم المجموعة من المفتاح ::g::
+  const groupTag = rptCourse.includes('::g::')
+    ? `<span class="badge b-accent" style="background:rgba(59,130,246,0.12);color:var(--accent);border:1px solid rgba(59,130,246,0.3);">${rptCourse.split('::g::')[1]}</span>`
+    : '';
   document.getElementById('rptOwner').innerHTML=`<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
     <span class="badge b-blue">${c.code}</span>
+    ${groupTag}
     <span style="font-size:0.82rem;color:var(--text2);">${c.name}</span>
     <span class="badge b-purple">${labels[rptType]}</span>
     <span style="font-size:0.73rem;color:var(--text3);">${(c.students||[]).length} students · ${c.room}</span>
@@ -4002,7 +4337,32 @@ function _dC(id){ if(_aC[id]){_aC[id].destroy();delete _aC[id];} }
 
 function renderAnalytics() {
   if (!CU || CU.role!=='admin') return;
-  const sessions = loadAllSessions();
+
+  // ── فلتر المجموعة في Analytics ─────────────────────────
+  const d = load();
+  const allGroups = {};
+  loadShared().users.forEach(u => {
+    const p = loadPersonal(u.username);
+    Object.keys(p.groups || {}).forEach(gid => { allGroups[gid] = true; });
+  });
+  const groupKeys = Object.keys(allGroups);
+  const anFilterEl = document.getElementById('anGroupFilter');
+  if (anFilterEl && groupKeys.length > 1) {
+    if (!anFilterEl._built) {
+      anFilterEl.innerHTML = '<option value="">All Groups</option>' +
+        groupKeys.map(g => `<option value="${g}">${g}</option>`).join('');
+      anFilterEl._built = true;
+      anFilterEl.style.display = 'inline-block';
+    }
+  } else if (anFilterEl) {
+    anFilterEl.style.display = 'none';
+  }
+  const selectedGroup = anFilterEl ? anFilterEl.value : '';
+
+  const allSessions = loadAllSessions();
+  const sessions = selectedGroup
+    ? allSessions.filter(s => s.groupId === selectedGroup)
+    : allSessions;
   const N = sessions.length;
 
   // Core aggregates
@@ -4207,7 +4567,11 @@ function _renderTopAbsentees(sessions) {
     });
   });
   const d=load();
-  Object.values(d.courses||{}).forEach(c=>{ (c.students||[]).forEach(stu=>{ if(map[stu.campusId]) map[stu.campusId].name=stu.name; }); });
+  // البحث عن الأسماء في كل المجموعات
+  const allCoursesForNames = {};
+  if (d.groups) { Object.values(d.groups).forEach(g => Object.assign(allCoursesForNames, g.courses||{})); }
+  else { Object.assign(allCoursesForNames, d.courses||{}); }
+  Object.values(allCoursesForNames).forEach(c=>{ (c.students||[]).forEach(stu=>{ if(map[stu.campusId]) map[stu.campusId].name=stu.name; }); });
   const top=Object.entries(map).sort((a,b)=>b[1].count-a[1].count).slice(0,10);
   const max=top.length?top[0][1].count:1;
   const el=document.getElementById('topAbsenteesList'); if(!el) return;
@@ -4237,10 +4601,13 @@ function _populateSessionFilter(sessions) {
 
 function renderSessionsTable() {
   const tbody=document.getElementById('sessionsBody'); if(!tbody) return;
-  const sessions=loadAllSessions();
+  const allRows=loadAllSessions();
   const fCourse=(document.getElementById('slFilterCourse')?.value||'');
   const fType  =(document.getElementById('slFilterType')?.value||'');
   const fStaff =(document.getElementById('slFilterStaff')?.value||'').toLowerCase();
+  const fGroup =(document.getElementById('anGroupFilter')?.value||'');
+  // فلترة بالمجموعة أولاً
+  const sessions = fGroup ? allRows.filter(s => s.groupId === fGroup) : allRows;
   let rows=[...sessions].sort((a,b)=>b.date.localeCompare(a.date));
   if(fCourse) rows=rows.filter(s=>s.courseCode===fCourse);
   if(fType==='manual') rows=rows.filter(s=>!s.electronicOnly&&!s.lateManual);
@@ -4681,25 +5048,31 @@ function searchStudents() {
 }
 
 function getNoShowStudents() {
-  const allCourses = loadAccessibleCourses();
+  const d = load();
+  const groupId = d.activeGroup;
+  // جمع الطلاب — فقط من المجموعة النشطة إن وجدت
+  const courses = groupId && d.groups?.[groupId]
+    ? d.groups[groupId].courses
+    : loadAccessibleCourses();
   const studentMap = {};
-  Object.values(allCourses).forEach(c => {
+  Object.values(courses).forEach(c => {
     (c.students||[]).forEach(s => {
       if (!studentMap[s.campusId]) studentMap[s.campusId] = { name:s.name, campusId:s.campusId, seenElectronic:false };
     });
   });
-  // Mark as seen if appeared in any session electronically
+  // Mark as seen — فقط جلسات المجموعة النشطة
   const allSessions = loadAllSessions();
-  allSessions.forEach(sess => {
-    if (sess.studentDetails) {
-      sess.studentDetails.forEach(sd => {
-        if (sd.status !== 'Absent' && studentMap[sd.campusId]) {
-          studentMap[sd.campusId].seenElectronic = true;
-        }
-      });
-    }
-  });
-  // NO SHOW = never seen electronically
+  allSessions
+    .filter(s => !groupId || !s.groupId || s.groupId === groupId)
+    .forEach(sess => {
+      if (sess.studentDetails) {
+        sess.studentDetails.forEach(sd => {
+          if (sd.status !== 'Absent' && studentMap[sd.campusId]) {
+            studentMap[sd.campusId].seenElectronic = true;
+          }
+        });
+      }
+    });
   return Object.values(studentMap).filter(s => !s.seenElectronic);
 }
 
@@ -4741,9 +5114,12 @@ function openStudentDetail(campusId) {
   // Populate course filter
   const sel = document.getElementById('studentDetailCourse');
   sel.innerHTML = '<option value="">All Courses</option>';
-  Object.keys(d.courses).forEach(k => {
-    const inCourse = (d.courses[k].students||[]).some(s=>s.campusId===campusId);
-    if (inCourse) sel.innerHTML += `<option value="${k}">${d.courses[k].code}</option>`;
+  const allCoursesForStudent = {};
+  if (d.groups) { Object.values(d.groups).forEach(g => Object.assign(allCoursesForStudent, g.courses||{})); }
+  else { Object.assign(allCoursesForStudent, d.courses||{}); }
+  Object.keys(allCoursesForStudent).forEach(k => {
+    const inCourse = (allCoursesForStudent[k].students||[]).some(s=>s.campusId===campusId);
+    if (inCourse) sel.innerHTML += `<option value="${k}">${allCoursesForStudent[k].code}</option>`;
   });
 
   document.getElementById('studentDetailPanel').style.display = 'block';
@@ -4954,7 +5330,9 @@ function exportNoShowReportFull(scope) {
     // Only students in courses this user manages
     const ownCourses = new Set(Object.keys(d.courses));
     filtered = noShows.filter(s => {
-      return Object.keys(d.courses).some(k => (d.courses[k].students||[]).some(st=>st.campusId===s.campusId));
+      const allC = Object.assign({}, d.courses||{});
+      if (d.groups) Object.values(d.groups).forEach(g => Object.assign(allC, g.courses||{}));
+      return Object.keys(allC).some(k => (allC[k].students||[]).some(st=>st.campusId===s.campusId));
     });
   }
 
@@ -5012,6 +5390,7 @@ function exportBiweeklyReport(scope) {
       rows.push({
         'Week': getSessionWeekNum(s.date) || '—',
         'Date': s.date,
+        'Group': s.groupId || '—',
         'Course': s.courseCode,
         'Staff': username,
         'Type': s.electronicOnly ? '⚡ Electronic Only' : '✅ Manual + Electronic',
@@ -5036,7 +5415,7 @@ function exportBiweeklyReport(scope) {
   if (scope === 'own') {
     const rows = buildUserSheet(CU.username);
     const ws = XLSX.utils.json_to_sheet(rows);
-    ws['!cols'] = [{wch:8},{wch:12},{wch:12},{wch:12},{wch:22},{wch:14},{wch:8},{wch:8},{wch:8},{wch:8},{wch:10},{wch:30}];
+    ws['!cols'] = [{wch:8},{wch:12},{wch:10},{wch:14},{wch:12},{wch:22},{wch:14},{wch:8},{wch:8},{wch:8},{wch:8},{wch:10},{wch:30}];
     XLSX.utils.book_append_sheet(wb, ws, CU.username);
     XLSX.writeFile(wb, `biweekly-${CU.username}-w${week1}-${week2}.xlsx`);
     return;
@@ -5048,7 +5427,7 @@ function exportBiweeklyReport(scope) {
     d.users.forEach(u => {
       const rows = buildUserSheet(u.username);
       const ws = XLSX.utils.json_to_sheet(rows);
-      ws['!cols'] = [{wch:8},{wch:12},{wch:12},{wch:12},{wch:22},{wch:14},{wch:8},{wch:8},{wch:8},{wch:8},{wch:10},{wch:30}];
+      ws['!cols'] = [{wch:8},{wch:12},{wch:10},{wch:14},{wch:12},{wch:22},{wch:14},{wch:8},{wch:8},{wch:8},{wch:8},{wch:10},{wch:30}];
       XLSX.utils.book_append_sheet(wb, ws, u.username.substring(0,31));
 
       // Summary row
