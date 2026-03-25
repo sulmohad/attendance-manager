@@ -1,0 +1,1532 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Attendance Manager — KSAU-HS</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- ══ LOGIN ══════════════════════════════════════ -->
+<div id="loginPage">
+  <div class="login-box">
+    <div class="login-logo">
+      <span class="li">🎓</span>
+      <h1>Attendance Manager</h1>
+      <p>KSAU-HS | COSHP-RM | Student Affairs</p>
+    </div>
+    <div class="fg">
+      <label>Username</label>
+      <input class="fi" type="text" id="loginUser" placeholder="Enter your username" />
+    </div>
+    <div class="fg">
+      <label>Password</label>
+      <input class="fi" type="password" id="loginPass" placeholder="Enter your password"
+             onkeydown="if(event.key==='Enter')doLogin()" />
+    </div>
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-err" id="loginErr">Invalid username or password. Please try again.</div>
+  </div>
+</div>
+
+<!-- ══ APP ════════════════════════════════════════ -->
+<div id="appPage">
+
+  <!-- Alert banner -->
+  <div class="alert-banner" id="alertBanner">
+    <span>🔔</span>
+    <span id="alertText"></span>
+    <span class="ab-close" onclick="document.getElementById('alertBanner').classList.remove('show')">✕</span>
+  </div>
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <div class="brand" id="brandLogo">🎓 <span>Attendance</span> Manager</div>
+    <div class="group-selector" id="groupSelectorWrap" style="display:none;">
+      <div class="group-dot" id="groupDot" style="background:var(--accent);"></div>
+      <select id="groupSelect" onchange="switchGroup(this.value)" title="Switch group"></select>
+    </div>
+    <span class="group-none-msg" id="groupNoneMsg" style="display:none;">No groups yet — go to Setup</span>
+    <div class="nav-tabs">
+      <div class="nt active" onclick="showPage('schedule')" id="tab-schedule" data-tour="tab-schedule">📅 Schedule</div>
+      <div class="nt" onclick="showPage('attendance')" id="tab-attendance" data-tour="tab-attendance">✋ Attendance</div>
+      <div class="nt" onclick="showPage('reports')" id="tab-reports" data-tour="tab-reports">📋 Reports</div>
+      <div class="nt" onclick="showPage('analytics')" id="tab-analytics" data-tour="tab-analytics" style="display:none;">📊 Analytics</div>
+      <div class="nt" onclick="showPage('students')" id="tab-students" data-tour="tab-students">👤 Students</div>
+      <div class="nt" onclick="showPage('setup')" id="tab-setup" data-tour="tab-setup">⚙️ Setup</div>
+      <div class="nt" onclick="showPage('help')" id="tab-help">❓ Help</div>
+      <div class="nt" onclick="openAdmin()" id="tab-admin" style="display:none;color:var(--purple);">🔐 Admin</div>
+    </div>
+    <div class="topbar-right">
+      <div class="user-chip">
+        <div class="uav" id="userAv">?</div>
+        <span id="userLbl">—</span>
+        <span class="admin-badge" id="adminBadge" style="display:none">ADMIN</span>
+      </div>
+      <div class="icon-btn" title="Logout" onclick="doLogout()">⏻</div>
+    </div>
+  </div>
+
+  <!-- ══ MOBILE BOTTOM NAV ══ -->
+  <nav class="mobile-nav" id="mobileNav">
+    <div class="mobile-nav-inner" id="mobileNavInner">
+      <div class="mn-item active" id="mn-schedule" onclick="showPage('schedule')">
+        <span class="mn-icon">📅</span>
+        <span class="mn-label">Schedule</span>
+      </div>
+      <div class="mn-item" id="mn-attendance" onclick="showPage('attendance')">
+        <span class="mn-icon">✋</span>
+        <span class="mn-label">Attendance</span>
+      </div>
+      <div class="mn-item" id="mn-reports" onclick="showPage('reports')">
+        <span class="mn-icon">📋</span>
+        <span class="mn-label">Reports</span>
+      </div>
+      <div class="mn-item" id="mn-students" onclick="showPage('students')">
+        <span class="mn-icon">👤</span>
+        <span class="mn-label">Students</span>
+      </div>
+      <div class="mn-item" id="mn-analytics" style="display:none;" onclick="showPage('analytics')">
+        <span class="mn-icon">📊</span>
+        <span class="mn-label">Analytics</span>
+      </div>
+      <div class="mn-item" id="mn-setup" onclick="showPage('setup')">
+        <span class="mn-icon">⚙️</span>
+        <span class="mn-label">Setup</span>
+      </div>
+      <div class="mn-item" id="mn-help" onclick="showPage('help')">
+        <span class="mn-icon">❓</span>
+        <span class="mn-label">Help</span>
+      </div>
+      <div class="mn-item mn-admin" id="mn-admin" style="display:none;" onclick="openAdmin()">
+        <span class="mn-icon">🔐</span>
+        <span class="mn-label">Admin</span>
+      </div>
+    </div>
+  </nav>
+  <div class="page active" id="page-schedule">
+    <div class="week-bar">
+      <h2>Weekly Schedule
+        <span class="tooltip-wrap">
+          <span class="tt-btn">?</span>
+          <span class="tt-box">Your weekly timetable. Click any course to start attendance. Navigate between weeks using the arrows.</span>
+        </span>
+      </h2>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button class="btn btn-ghost" onclick="changeWeek(-1)">◀ Prev</button>
+        <div class="week-label" id="weekLabel">—</div>
+        <button class="btn btn-ghost" onclick="changeWeek(1)">Next ▶</button>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <div class="sched-view-toggle" id="schedViewToggle">
+          <button class="svt active" id="svt-merged" onclick="setSchedView('merged')">All Groups</button>
+          <button class="svt" id="svt-single" onclick="setSchedView('single')">Active Group</button>
+        </div>
+        <span class="week-num" id="weekNum"></span>
+        <button class="btn btn-ghost" id="alertToggleBtn" onclick="toggleSmartAlert()"
+          style="font-size:0.72rem;padding:4px 10px;display:flex;align-items:center;gap:5px;">
+          <span id="alertToggleIcon">🔔</span>
+          <span id="alertToggleLbl">Alert Off</span>
+        </button>
+      </div>
+    </div>
+    <div id="schedNoData" class="no-sched">
+      <div class="ni">📅</div>
+      <p>No schedule configured yet.<br>Go to <strong>Setup</strong> to add your courses and weekly schedule.</p>
+      <button class="btn btn-primary" onclick="showPage('setup')">Go to Setup →</button>
+    </div>
+    <div id="schedWrap" style="display:none;"></div>
+  </div>
+
+  <!-- ══ ATTENDANCE PAGE ══ -->
+  <div class="page" id="page-attendance">
+    <!-- Team View Banner for Attendance -->
+    <div id="courseSelector">
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span>📚 Select Course
+            <span class="tooltip-wrap">
+              <span class="tt-btn">?</span>
+              <span class="tt-box">Choose the course you want to take attendance for. You can also click directly from the Schedule page.</span>
+            </span>
+          </span>
+        </div>
+        <div id="coursePickGrid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px;"></div>
+        <div class="empty" id="coursePickEmpty" style="display:none">No courses configured. Go to Setup first.</div>
+      </div>
+
+      <!-- Previous Sessions Panel -->
+      <div class="card" id="prevSessionsCard" style="display:none;">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <span>📋 Previous Sessions — <span id="prevSessionsCourseName" style="color:var(--accent);">—</span></span>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="input" id="prevSessionsCourseFilter" style="font-size:0.78rem;padding:5px 10px;" onchange="renderPrevSessions()">
+              <option value="">All Courses</option>
+            </select>
+            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="hidePrevSessions()">✕ Close</button>
+          </div>
+        </div>
+        <div id="prevSessionsList" style="display:flex;flex-direction:column;gap:6px;max-height:360px;overflow-y:auto;"></div>
+      </div>
+
+      <!-- Roster Summary Panel -->
+      <div class="card" id="rosterSummaryCard" style="display:none;margin-top:0;">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:14px;">
+          <div class="card-title" style="margin-bottom:0;">
+            📊 Attendance Roster — <span id="rosterCourseLabel" style="color:var(--accent);">—</span>
+          </div>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <select class="input" id="rosterSessionFilter" style="font-size:0.78rem;padding:5px 10px;" onchange="renderRosterTable()">
+              <option value="">All Sessions (aggregate)</option>
+            </select>
+            <button class="btn btn-ghost" style="padding:4px 10px;font-size:0.75rem;" onclick="hideRosterSummary()">✕ Close</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="roster-table" id="rosterTable">
+            <thead id="rosterHead"></thead>
+            <tbody id="rosterBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Session View Panel (read-only, no timer) -->
+      <div id="sessionViewPanel" style="display:none;">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="closeSessionView()">← Back</button>
+          <div style="flex:1;">
+            <div style="font-size:0.95rem;font-weight:700;" id="svTitle">—</div>
+            <div style="font-size:0.72rem;color:var(--text3);font-family:var(--mono);" id="svMeta">—</div>
+          </div>
+          <span class="badge b-cyan" style="font-size:0.72rem;">👁 View Only · No Timer</span>
+        </div>
+        <div id="svContent"></div>
+      </div>
+    </div>
+
+    <div id="attPanel" style="display:none">
+      <div class="att-hdr">
+        <button class="btn btn-ghost" onclick="closeAtt()">← Back</button>
+        <div class="att-info">
+          <h2 id="attTitle">—</h2>
+          <p id="attSub">—</p>
+        </div>
+        <div class="room-badge" id="attRoom">—</div>
+        <div class="timer-display" id="timerDisp">00:00</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">✋ Manual Attendance
+          <span class="tooltip-wrap">
+            <span class="tt-btn">?</span>
+            <span class="tt-box">Tap a student card to mark as absent (red). Tap again to undo. Use seat numbers to match with physical seats in the room.</span>
+          </span>
+        </div>
+        <div class="toolbar">
+          <input class="search" type="text" id="attSearch" placeholder="🔍 Search by name or seat number..." oninput="filterAtt()" />
+          <span class="badge b-red" id="absBadge">Absent: 0</span>
+          <button class="btn btn-ghost" onclick="markAll(false)">Mark All Absent</button>
+          <button class="btn btn-ghost" onclick="markAll(true)">Mark All Present</button>
+        </div>
+        <div class="student-grid" id="attGrid"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <div>
+            <label style="font-size:0.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Session Note (optional)</label>
+            <textarea class="session-note" id="sessionNote" rows="2" placeholder="e.g. 'Alternative room used'"></textarea>
+          </div>
+          <div>
+            <label style="font-size:0.7rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:4px;">Lecturer (optional)</label>
+            <input class="input" type="text" id="lecturerName" placeholder="e.g. Dr. Abdullah Al-Rashid" />
+          </div>
+        </div>
+        <div style="font-size:0.71rem;color:var(--text3);">💡 Tap a card to toggle absent · Use search to find students quickly</div>
+      </div>
+
+      <!-- Attendance Mode Selector -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:16px 20px;margin-bottom:12px;">
+        <div style="font-size:0.73rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">
+          Attendance Mode · نوع التحضير
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;" id="attModeSelector">
+          <div id="modeManual" onclick="setAttMode('manual')"
+            style="padding:10px 8px;border-radius:var(--r);cursor:pointer;text-align:center;transition:all 0.15s;
+            background:var(--green-dim);border:1.5px solid var(--green);">
+            <div style="font-size:1rem;margin-bottom:4px;">✅</div>
+            <div style="font-size:0.73rem;font-weight:600;color:var(--green);">Manual + Electronic</div>
+            <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">Default</div>
+          </div>
+          <div id="modeElectronic" onclick="setAttMode('electronic')"
+            style="padding:10px 8px;border-radius:var(--r);cursor:pointer;text-align:center;transition:all 0.15s;
+            background:var(--surface2);border:1px solid var(--border);">
+            <div style="font-size:1rem;margin-bottom:4px;">⚡</div>
+            <div style="font-size:0.73rem;font-weight:600;color:var(--text2);">Electronic Only</div>
+            <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">No room visit</div>
+          </div>
+          <div id="modeLateManual" onclick="setAttMode('latemanual')"
+            style="padding:10px 8px;border-radius:var(--r);cursor:pointer;text-align:center;transition:all 0.15s;
+            background:var(--surface2);border:1px solid var(--border);">
+            <div style="font-size:1rem;margin-bottom:4px;">📋</div>
+            <div style="font-size:0.73rem;font-weight:600;color:var(--text2);">Manual Only</div>
+            <div style="font-size:0.65rem;color:var(--text3);margin-top:2px;">No electronic</div>
+          </div>
+        </div>
+
+        <!-- Extra fields per mode -->
+        <div id="modeExtraFields" style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);display:none;">
+
+          <!-- Manual + Electronic: Notes only -->
+          <div id="extraManual" style="display:none;">
+            <label style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;display:block;margin-bottom:5px;">Notes (optional)</label>
+            <input class="input" type="text" id="manualReason" placeholder="" />
+          </div>
+
+          <!-- Electronic Only: Covered By OR Other Reason -->
+          <div id="extraElectronic" style="display:none;">
+            <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Reason (optional)</div>
+            <div style="display:flex;flex-direction:column;gap:7px;">
+              <div>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);">
+                  <input type="checkbox" id="elecCoveredByCheck" onchange="toggleElecOption('coveredby')" style="accent-color:var(--cyan);width:15px;height:15px;" />
+                  <span style="font-size:0.8rem;font-weight:500;">Covered by</span>
+                </label>
+                <div id="elecCoveredByWrap" style="display:none;margin-top:6px;">
+                  <select class="input" id="coveredBySelect" style="font-size:0.82rem;" onchange="document.getElementById('coveredBy').value=this.value">
+                    <option value="">— Select colleague —</option>
+                  </select>
+                  <input type="hidden" id="coveredBy" value="" />
+                </div>
+              </div>
+              <div>
+                <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);">
+                  <input type="checkbox" id="elecOtherCheck" onchange="toggleElecOption('other')" style="accent-color:var(--cyan);width:15px;height:15px;" />
+                  <span style="font-size:0.8rem;font-weight:500;">Other reason</span>
+                </label>
+                <div id="elecOtherWrap" style="display:none;margin-top:6px;">
+                  <input class="input" type="text" id="elecOtherReason" placeholder="" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Manual Only: 3 radio options -->
+          <div id="extraLateManual" style="display:none;">
+            <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Reason (optional)</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);">
+                <input type="radio" name="manualOnlyReason" value="late_reschedule" id="moLateReschedule" onchange="toggleManualOnlyOther()" style="accent-color:var(--yellow);width:15px;height:15px;" />
+                <span style="font-size:0.8rem;font-weight:500;">Late / Reschedule notification</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);">
+                <input type="radio" name="manualOnlyReason" value="asked_by_dept" id="moAskedByDept" onchange="toggleManualOnlyOther()" style="accent-color:var(--yellow);width:15px;height:15px;" />
+                <span style="font-size:0.8rem;font-weight:500;">Asked by Dept.</span>
+              </label>
+              <label style="display:flex;align-items:center;gap:8px;cursor:pointer;padding:8px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface2);">
+                <input type="radio" name="manualOnlyReason" value="other" id="moOther" onchange="toggleManualOnlyOther()" style="accent-color:var(--yellow);width:15px;height:15px;" />
+                <span style="font-size:0.8rem;font-weight:500;">Other reason</span>
+              </label>
+              <div id="manualOnlyOtherWrap" style="display:none;">
+                <input class="input" type="text" id="lateManualReason" placeholder="" />
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="sas-box" id="sasTour">
+        <h3>📊 Upload Electronic Attendance (SAS) to Match
+          <span class="tooltip-wrap">
+            <span class="tt-btn">?</span>
+            <span class="tt-box">Export the attendance file from SAS app (All sheet), then upload it here to automatically compare with manual attendance.</span>
+          </span>
+        </h3>
+        <div class="upload-zone" id="sasZone">
+          <input type="file" accept=".xlsx,.xls" id="sasFile" />
+          <div class="ui">📁</div>
+          <div class="ul" id="sasLabel">Click or drag SAS Excel file here</div>
+          <div class="us">Export "All" sheet from SAS · .xlsx format</div>
+        </div>
+      </div>
+
+      <button class="btn btn-primary btn-full" id="matchBtn" onclick="runMatch()" disabled style="margin-bottom:20px;">⚡ Match & Show Results</button>
+
+      <div class="results" id="resultsDiv">
+        <div class="rs">
+          <div class="rh" onclick="toggleSec('secAbs',this)">
+            <div class="rdot" style="background:var(--red)"></div>
+            <span>Absent</span>
+            <span class="rsub">Absent from room & absent electronically</span>
+            <span class="rcnt"><span class="badge b-red" id="cntAbs">0</span></span>
+            <span class="chev">▾</span>
+          </div>
+          <div class="rb" id="secAbs"></div>
+        </div>
+        <div class="rs">
+          <div class="rh" onclick="toggleSec('secEsc',this)">
+            <div class="rdot" style="background:var(--yellow)"></div>
+            <span>Escaped 🏃</span>
+            <span class="rsub">Absent from room but registered electronically</span>
+            <span class="rcnt"><span class="badge b-yellow" id="cntEsc">0</span></span>
+            <span class="chev">▾</span>
+          </div>
+          <div class="rb" id="secEsc"></div>
+        </div>
+        <div class="rs">
+          <div class="rh" onclick="toggleSec('secNoApp',this)">
+            <div class="rdot" style="background:var(--green)"></div>
+            <span>Not Registered in App</span>
+            <span class="rsub">Present in room but absent electronically</span>
+            <span class="rcnt"><span class="badge b-green" id="cntNoApp">0</span></span>
+            <span class="chev">▾</span>
+          </div>
+          <div class="rb" id="secNoApp"></div>
+        </div>
+        <div class="rs">
+          <div class="rh" onclick="toggleSec('secExc',this)">
+            <div class="rdot" style="background:var(--cyan)"></div>
+            <span>Excused</span>
+            <span class="rsub">Absent from seat but with permission</span>
+            <span class="rcnt"><span class="badge b-cyan" id="cntExc">0</span></span>
+            <span class="chev">▾</span>
+          </div>
+          <div class="rb" id="secExc"></div>
+        </div>
+
+        <div style="display:flex;gap:10px;align-items:center;margin:16px 0 8px;flex-wrap:wrap;">
+          <button class="btn btn-success" onclick="saveSession()">💾 Save Session</button>
+          <span style="font-size:0.75rem;color:var(--text3);">Session is auto-saved after matching</span>
+        </div>
+        <div class="export-row">
+          <button class="btn btn-ghost" onclick="exportAttExcel()">📥 Export Excel</button>
+          <button class="btn btn-ghost" onclick="exportAttCSV()">📄 Export CSV</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ REPORTS PAGE ══ -->
+  <div class="page" id="page-reports">
+    <div class="rpt-grid">
+      <div class="rpt-sidebar">
+        <div id="rptCourseList"><div class="empty" style="padding:10px;font-size:0.77rem;">No groups yet</div></div>
+      </div>
+      <div>
+        <div class="rpt-types">
+          <div class="rtc active" onclick="selRptType('attendance',this)"><div class="rtc-icon">📋</div><div class="rtc-name">Attendance Sheet</div><div class="rtc-sub">For administration</div></div>
+          <div class="rtc" onclick="selRptType('monthly',this)"><div class="rtc-icon">📝</div><div class="rtc-name">Monthly Exam</div><div class="rtc-sub">Exam roster</div></div>
+          <div class="rtc" onclick="selRptType('final',this)"><div class="rtc-icon">📌</div><div class="rtc-name">Final Exam</div><div class="rtc-sub">Exam roster</div></div>
+        </div>
+        <!-- Special reports -->
+        <div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="showReportModal('noshow')">
+            🚨 NO SHOW Weekly Report
+          </button>
+          <button class="btn btn-ghost" style="flex:1;justify-content:center;" onclick="showReportModal('biweekly')">
+            📊 Biweekly Staff Report
+          </button>
+        </div>
+        <div class="card" id="rptPreview">
+          <div class="card-title">👁 Preview & Export</div>
+          <div id="rptOwner" style="margin-bottom:12px;"></div>
+          <div id="rptTableWrap" style="overflow-x:auto;margin-bottom:16px;"><div class="empty">Select a course from the sidebar</div></div>
+          <div class="export-row">
+            <button class="btn btn-ghost" onclick="exportRptExcel()">📥 Export Excel</button>
+            <button class="btn btn-ghost" onclick="exportRptPDF()">🖨 Export PDF</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══ STUDENTS PAGE ══ -->
+  <div class="page" id="page-students">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:0.95rem;font-weight:700;">👤 Students</h2>
+        <p style="font-size:0.75rem;color:var(--text3);margin-top:3px;">Search students and view individual attendance records</p>
+      </div>
+    </div>
+
+    <!-- Search -->
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-title">🔍 Search Student</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <input class="input" type="text" id="studentSearch"
+          placeholder="Campus ID or name..."
+          style="flex:1;min-width:200px;"
+          oninput="searchStudents()" />
+        <select class="input" id="studentCourseFilter" style="min-width:160px;" onchange="searchStudents()">
+          <option value="">All Courses</option>
+        </select>
+      </div>
+      <!-- Search results -->
+      <div id="studentSearchResults" style="margin-top:12px;display:flex;flex-direction:column;gap:6px;max-height:300px;overflow-y:auto;">
+        <div class="empty">Start typing to search...</div>
+      </div>
+    </div>
+
+    <!-- NO SHOW banner -->
+    <div id="noShowBanner" style="display:none;background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.3);border-radius:var(--rl);padding:16px 20px;margin-bottom:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;">
+        <div>
+          <div style="font-size:0.88rem;font-weight:700;color:var(--red);">🚨 NO SHOW Students</div>
+          <div style="font-size:0.75rem;color:var(--text3);margin-top:3px;">Students with no recorded attendance (manual or electronic)</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-ghost" onclick="exportNoShowReport()">📥 Export NO SHOW Report</button>
+        </div>
+      </div>
+      <div id="noShowList" style="margin-top:12px;display:flex;flex-direction:column;gap:5px;max-height:200px;overflow-y:auto;"></div>
+    </div>
+
+    <!-- Student detail panel -->
+    <div id="studentDetailPanel" style="display:none;">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+        <button class="btn btn-ghost" onclick="closeStudentDetail()">← Back</button>
+        <div style="flex:1;">
+          <h2 style="font-size:0.95rem;font-weight:700;" id="studentDetailName">—</h2>
+          <p style="font-size:0.73rem;color:var(--text3);margin-top:3px;font-family:var(--mono);" id="studentDetailId">—</p>
+        </div>
+        <span id="studentNoShowBadge" style="display:none;" class="badge b-red">🚨 NO SHOW</span>
+        <button class="btn btn-ghost" onclick="exportStudentReport()">📥 Export Report</button>
+      </div>
+
+      <!-- Summary cards -->
+      <div id="studentSummaryCards" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;margin-bottom:16px;"></div>
+
+      <!-- Detail table -->
+      <div class="card">
+        <div class="card-title">📋 Session History
+          <select class="input" id="studentDetailCourse" style="margin-right:auto;max-width:200px;font-size:0.78rem;" onchange="renderStudentHistory()">
+            <option value="">All Courses</option>
+          </select>
+        </div>
+        <div style="overflow-x:auto;">
+          <table style="width:100%;border-collapse:collapse;font-size:0.78rem;" id="studentHistoryTable">
+            <thead>
+              <tr>
+                <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);text-align:left;">Date</th>
+                <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Course</th>
+                <th style="padding:8px 10px;border:1px solid var(--border);background:var(--surface2);font-size:0.68rem;color:var(--text3);">Status</th>
+              </tr>
+            </thead>
+            <tbody id="studentHistoryBody"><tr><td colspan="4" class="empty">No sessions recorded</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  </div>
+
+  <!-- ══ ANALYTICS PAGE ══ -->
+  <div class="page" id="page-analytics">
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:0.95rem;font-weight:700;">Analytics <span class="badge b-purple" style="vertical-align:middle;margin-left:8px;">Admin Only</span></h2>
+        <p style="font-size:0.75rem;color:var(--text3);margin-top:4px;">الحضور الإلكتروني مقابل اليدوي — دليل لدعم القرار الإداري</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <select class="input" id="anGroupFilter" onchange="renderAnalytics()"
+          style="display:none;font-size:0.78rem;padding:5px 10px;min-width:120px;">
+          <option value="">All Groups</option>
+        </select>
+        <button class="btn btn-ghost" onclick="openExportDialog()">📥 تصدير Excel</button>
+      </div>
+    </div>
+
+    <!-- Archive notice -->
+    <div class="archive-notice" id="archiveNotice" style="display:none;margin-bottom:20px;">
+      <div class="an-icon">🗃</div>
+      <div><h3>Archive Reminder</h3><p id="archiveText">You have data from a previous year ready to archive.</p></div>
+      <div style="margin-left:auto;display:flex;gap:8px;flex-shrink:0;">
+        <button class="btn btn-ghost" onclick="downloadArchive()">📥 Download</button>
+        <button class="btn btn-danger" onclick="clearArchive()">🗑 Clear</button>
+      </div>
+    </div>
+
+    <!-- ══ HERO: دقة الإلكتروني ══ -->
+    <div class="an-hero" id="analyticsHero">
+      <div class="an-hero-score">
+        <div class="an-hero-num" id="aAccuracy" style="color:var(--green)">—%</div>
+        <div class="an-hero-lbl">دقة الحضور الإلكتروني<br><span style="color:var(--text3);font-size:0.62rem;">بدون أي تدخل يدوي</span></div>
+      </div>
+      <div class="an-hero-div"></div>
+      <div class="an-hero-stats">
+        <div class="an-hero-stat">
+          <div class="an-hero-snum" id="aSessions" style="color:var(--accent)">—</div>
+          <div class="an-hero-slbl">جلسات مسجّلة</div>
+        </div>
+        <div class="an-hero-stat">
+          <div class="an-hero-snum" id="aEscaped" style="color:var(--yellow)">—</div>
+          <div class="an-hero-slbl">مهرّب رُصد<br>بالحضور اليدوي</div>
+        </div>
+        <div class="an-hero-stat">
+          <div class="an-hero-snum" id="aManualErrors" style="color:var(--red)">—</div>
+          <div class="an-hero-slbl">خطأ يدوي<br>(Staff Error + غير طبي)</div>
+        </div>
+        <div class="an-hero-stat">
+          <div class="an-hero-snum" id="aExcused" style="color:var(--cyan)">—</div>
+          <div class="an-hero-slbl">مأذون<br>(عذر طبي مشروع)</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ROI ══ -->
+    <div class="roi-card">
+      <div class="roi-title">⚖️ هل التحضير اليدوي يستحق العناء؟</div>
+      <div class="roi-grid">
+        <div class="roi-item">
+          <div class="roi-num" id="roiTime" style="color:var(--yellow)">—</div>
+          <div class="roi-lbl">إجمالي ساعات الموظفين على الحضور اليدوي</div>
+        </div>
+        <div class="roi-item">
+          <div class="roi-num" id="roiPerHour" style="color:var(--red)">—</div>
+          <div class="roi-lbl">مهرّب مكتشف / ساعة عمل يدوي</div>
+        </div>
+        <div class="roi-item">
+          <div class="roi-num" id="roiWasted" style="color:var(--orange)">—</div>
+          <div class="roi-lbl">خطأ أدخله النظام اليدوي (Staff Error + عذر غير طبي)</div>
+        </div>
+      </div>
+      <div id="roiVerdict" style="margin-top:14px;"></div>
+    </div>
+
+    <!-- ══ الرسوم البيانية: صف أول ══ -->
+    <div class="an-charts-row">
+      <div class="an-chart-card">
+        <div class="an-chart-title">📊 دقة الإلكتروني لكل مادة</div>
+        <div style="position:relative;height:195px;"><canvas id="chartAccCourse"></canvas></div>
+      </div>
+      <div class="an-chart-card">
+        <div class="an-chart-title">🔵 توزيع أنواع الجلسات</div>
+        <div style="position:relative;height:195px;"><canvas id="chartTypes"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ══ Trend كامل العرض ══ -->
+    <div class="an-chart-full">
+      <div class="an-chart-title">📈 مسار الدقة عبر الزمن <span style="font-size:0.65rem;color:var(--text3);font-weight:400;">(الجلسات مرتّبة زمنياً)</span></div>
+      <div style="position:relative;height:150px;"><canvas id="chartTrend"></canvas></div>
+    </div>
+
+    <!-- ══ صف ثانٍ: أكثر الطلاب غياباً + مهرّبو كل مادة ══ -->
+    <div class="an-charts-row">
+      <div class="an-chart-card">
+        <div class="an-chart-title">🔴 أكثر الطلاب غياباً <span style="font-size:0.65rem;color:var(--text3);font-weight:400;">(اضغط للانتقال)</span></div>
+        <div class="ab-list" id="topAbsenteesList">
+          <div style="font-size:0.75rem;color:var(--text3);text-align:center;padding:20px 0;">لا توجد بيانات بعد</div>
+        </div>
+      </div>
+      <div class="an-chart-card">
+        <div class="an-chart-title">🏃 المهرّبون لكل مادة</div>
+        <div style="position:relative;height:195px;"><canvas id="chartEscaped"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ══ Session Log ══ -->
+    <div class="card">
+      <div class="card-title" style="justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <span>📋 سجل الجلسات</span>
+        <div class="slog-filter">
+          <select id="slFilterCourse" onchange="renderSessionsTable()"><option value="">كل المواد</option></select>
+          <select id="slFilterType" onchange="renderSessionsTable()">
+            <option value="">كل الأنواع</option>
+            <option value="manual">✅ يدوي + إلكتروني</option>
+            <option value="elec">⚡ إلكتروني فقط</option>
+            <option value="late">📋 يدوي فقط</option>
+          </select>
+          <input id="slFilterStaff" type="text" placeholder="بحث موظف..." oninput="renderSessionsTable()" style="width:100px;">
+        </div>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="sessions-table" id="sessionsTable">
+          <thead>
+            <tr>
+              <th>التاريخ</th><th>المادة</th><th>الموظف</th><th>المجموع</th>
+              <th>غياب إلكتروني</th><th>غياب يدوي</th>
+              <th>مهرّب</th><th>مأذون</th><th>غير مسجّل</th>
+              <th>الدقة</th><th>النوع</th>
+            </tr>
+          </thead>
+          <tbody id="sessionsBody"><tr><td colspan="11" class="empty">لا توجد جلسات مسجلة</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SETUP PAGE ══ -->
+  <div class="page" id="page-setup">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:0.95rem;font-weight:700;">Term Setup</h2>
+        <p style="font-size:0.75rem;color:var(--text3);margin-top:3px;">Configure your term, upload courses, and build your weekly schedule</p>
+      </div>
+      <button class="btn btn-danger" onclick="confirmClear()">🗑 Clear Term Data</button>
+    </div>
+
+    <div class="setup-grid">
+      <!-- Step 1 -->
+      <div class="setup-step" id="tourStep1">
+        <div class="step-hdr">
+          <div class="step-num" id="sn1">1</div>
+          <div><div class="step-title">Term Dates</div><div class="step-sub">Set start date & duration</div></div>
+        </div>
+        <div class="field">
+          <label>First Day of Term</label>
+          <input class="input" type="date" id="termStart" onchange="updateTermDates()" />
+        </div>
+        <div class="field">
+          <label>Duration (weeks)</label>
+          <div style="display:flex;gap:8px;align-items:center;">
+            <input class="input" type="number" id="termWeeks" value="16" min="1" max="40" onchange="updateTermDates()" style="width:80px;" />
+            <button class="btn btn-ghost" onclick="extendTerm()">+ Extend</button>
+          </div>
+        </div>
+        <div class="term-info" id="termInfo">
+          <div class="ti-row"><span class="tl">Start</span><span class="tv" id="tiStart">—</span></div>
+          <div class="ti-row"><span class="tl">End</span><span class="tv" id="tiEnd">—</span></div>
+          <div class="ti-row"><span class="tl">Total Weeks</span><span class="tv" id="tiWeeks">—</span></div>
+          <div class="ti-row"><span class="tl">Current Week</span><span class="tv" id="tiCurrent">—</span></div>
+        </div>
+        <button class="btn btn-primary btn-full" style="margin-top:12px;" onclick="saveTerm()">Save Term Dates</button>
+      </div>
+
+      <!-- Step 2: Upload University Schedule -->
+      <div class="setup-step" id="tourStep2" style="grid-column:1/-1;">
+        <div class="step-hdr">
+          <div class="step-num" id="sn2">2</div>
+          <div><div class="step-title">Upload University Schedule</div><div class="step-sub">Excel from the university — auto-builds courses &amp; schedule · ملف الجدول من الجامعة</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+          <div>
+            <div class="upload-zone" id="schedExcelZone">
+              <input type="file" accept=".xlsx,.xls" id="schedExcelFile" onchange="loadUniversitySchedule(this)" />
+              <div class="ui">📅</div>
+              <div class="ul" id="schedExcelLabel">Click or drag university Excel schedule</div>
+              <div class="us">الملف المصدَّر من نظام الجامعة</div>
+            </div>
+            <div id="sheetSelectorWrap" style="display:none;margin-top:10px;">
+              <div class="field" style="margin:0 0 10px;">
+                <label>Select sheet · اختر الشيت</label>
+                <select class="input" id="sheetSelector" onchange="onSheetSelected()">
+                  <option value="">— Select sheet —</option>
+                </select>
+              </div>
+              <div class="field" style="margin:0 0 10px;">
+                <label>Group name · اسم المجموعة</label>
+                <div style="display:flex;gap:8px;align-items:center;">
+                  <input class="input" type="text" id="groupNameInput"
+                    placeholder="e.g. MAB, MAA, Group 1"
+                    style="flex:1;" />
+                  <button class="btn btn-primary" onclick="parseScheduleSheet()" id="loadGroupBtn" disabled>
+                    ✅ Load
+                  </button>
+                </div>
+                <div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:5px;" id="existingGroupChips"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--text3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Courses &amp; Schedule Detected</div>
+            <div class="course-list" id="courseList"><div class="empty" style="padding:10px;font-size:0.75rem;">Upload schedule to auto-detect courses</div></div>
+            <div style="margin-top:10px;display:flex;flex-direction:column;gap:5px;" id="schedEntries">
+              <div class="empty" style="padding:8px;font-size:0.73rem;" id="schedPreviewEmpty">Schedule slots will appear here</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Hidden controls required by addSched() / renderSchedCoursePicker() -->
+      <div style="display:none;" aria-hidden="true">
+        <select id="sbDay"><option value="0">Sunday</option><option value="1">Monday</option><option value="2">Tuesday</option><option value="3">Wednesday</option><option value="4">Thursday</option></select>
+        <input type="time" id="sbTime" />
+        <select id="sbCourse"><option value="">— Select course —</option></select>
+      </div>
+
+      <!-- Step 3: Upload Student Rosters -->
+      <div class="setup-step" style="grid-column:1/-1;" id="tourStep3">
+        <div class="step-hdr">
+          <div class="step-num" id="sn3">3</div>
+          <div><div class="step-title">Upload Student Rosters (SIS PDF)</div><div class="step-sub">One PDF per course from SIS · PDF من SIS لكل مادة</div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <div class="upload-zone" id="rosterZone">
+              <input type="file" accept=".xlsx,.xls,.pdf" id="rosterFile" onchange="loadRoster(this)" multiple />
+              <div class="ui">📋</div>
+              <div class="ul" id="rosterLabel">Click or drag SIS files here</div>
+              <div class="us">Excel or PDF · multiple files allowed · يمكن رفع أكثر من ملف</div>
+            </div>
+            <!-- Pending rosters queue -->
+            <div id="rosterQueue" style="display:none;margin-top:10px;">
+              <div style="font-size:0.73rem;color:var(--text3);margin-bottom:6px;font-weight:600;">Files ready to assign:</div>
+              <div id="rosterQueueList" style="display:flex;flex-direction:column;gap:6px;"></div>
+            </div>
+          </div>
+          <div>
+            <div style="font-size:0.75rem;color:var(--text3);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;">Roster Status</div>
+            <div class="course-list" id="rosterStatusList"><div class="empty" style="padding:10px;font-size:0.75rem;">Upload schedule first (Step 2)</div></div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+  </div>
+
+  <!-- ══ HELP PAGE ══ -->
+  <div class="page" id="page-help">
+
+    <!-- Header -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:10px;">
+      <div>
+        <h2 style="font-size:1rem;font-weight:700;">❓ Help Center <span style="font-size:0.75rem;color:var(--text3);font-weight:400;">· مركز المساعدة</span></h2>
+        <p style="font-size:0.75rem;color:var(--text3);margin-top:4px;">Step-by-step visual guide · دليل مصور خطوة بخطوة</p>
+      </div>
+      <button class="btn btn-primary" onclick="startTour()">▶ Start Tour · ابدأ الجولة</button>
+    </div>
+
+    <!-- ── SECTION 1: SETUP ── -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div style="width:32px;height:32px;border-radius:50%;background:var(--accent-glow);border:1px solid rgba(59,130,246,0.3);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">⚙️</div>
+        <div>
+          <div style="font-size:0.92rem;font-weight:700;">Setup — First Time Only</div>
+          <div style="font-size:0.75rem;color:var(--text3);">الإعداد — مرة واحدة فقط في بداية كل ترم</div>
+        </div>
+      </div>
+
+      <!-- Step 1.1 Term Dates -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--accent);color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">STEP 1</span>
+          <span style="font-size:0.88rem;font-weight:600;">Set Term Dates · تحديد تواريخ الترم</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              Go to <strong style="color:var(--accent);">Setup tab</strong> → Enter the first day of the term → The app automatically calculates 16 weeks.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;">
+              اذهب إلى تبويب <strong style="color:var(--accent);">Setup</strong> ← أدخل أول يوم في الترم ← التطبيق يحسب ١٦ أسبوع تلقائياً.
+            </p>
+          </div>
+          <!-- SVG: Term setup illustration -->
+          <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <!-- Window chrome -->
+            <rect x="0" y="0" width="280" height="140" rx="8" fill="#0f1520"/>
+            <rect x="0" y="0" width="280" height="28" rx="8" fill="#161e2e"/>
+            <rect x="0" y="20" width="280" height="8" fill="#161e2e"/>
+            <circle cx="12" cy="14" r="4" fill="#ef4444" opacity="0.6"/>
+            <circle cx="24" cy="14" r="4" fill="#eab308" opacity="0.6"/>
+            <circle cx="36" cy="14" r="4" fill="#22c55e" opacity="0.6"/>
+            <text x="100" y="18" font-size="8" fill="#64748b" font-family="monospace">⚙️ Setup</text>
+            <!-- Form -->
+            <rect x="14" y="36" width="252" height="18" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="48" font-size="7" fill="#64748b">First Day of Term</text>
+            <rect x="160" y="38" width="100" height="14" rx="3" fill="#1c2738" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="168" y="48" font-size="7" fill="#e2e8f0">2026-09-01</text>
+            <!-- Arrow pointing to date input -->
+            <path d="M155 45 L148 45" stroke="#3b82f6" stroke-width="1.5" marker-end="url(#arr)"/>
+            <defs><marker id="arr" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#3b82f6"/></marker></defs>
+            <!-- Weeks row -->
+            <rect x="14" y="62" width="252" height="18" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="74" font-size="7" fill="#64748b">Duration (weeks)</text>
+            <rect x="160" y="64" width="40" height="14" rx="3" fill="#1c2738" stroke="#1e2d42" stroke-width="1"/>
+            <text x="174" y="74" font-size="7" fill="#e2e8f0">16</text>
+            <!-- Info box -->
+            <rect x="14" y="88" width="252" height="28" rx="4" fill="#0d1a2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="99" font-size="6.5" fill="#94a3b8">Start: 01 Sep</text>
+            <text x="20" y="109" font-size="6.5" fill="#94a3b8">End: 31 Dec · Current: Week 1</text>
+            <rect x="140" y="90" width="120" height="24" rx="3" fill="#1e3a5f" stroke="#3b82f6" stroke-width="1" opacity="0.8"/>
+            <text x="155" y="104" font-size="7" fill="#3b82f6" font-weight="bold">✓ Auto-calculated</text>
+            <!-- Save button -->
+            <rect x="14" y="122" width="252" height="12" rx="4" fill="#3b82f6"/>
+            <text x="108" y="131" font-size="7" fill="white" font-weight="bold">Save Term Dates</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Step 1.2 Upload Courses -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--green);color:#000;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">STEP 2</span>
+          <span style="font-size:0.88rem;font-weight:600;">Upload Course Roster · رفع كشف المادة</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              Click <strong style="color:var(--green);">Download Template</strong> → Fill the Excel file with student data → Upload it. One file per course.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;margin-bottom:10px;">
+              اضغط <strong style="color:var(--green);">Download Template</strong> ← أملأ ملف Excel ببيانات الطلاب ← ارفعه. ملف واحد لكل مادة.
+            </p>
+            <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;font-size:0.72rem;font-family:var(--mono);color:var(--text3);">
+              <div style="color:var(--accent);margin-bottom:4px;">Excel columns required:</div>
+              <div>Seat No · Campus ID · Name</div>
+              <div>Course Code · Course Name · Room</div>
+            </div>
+          </div>
+          <svg viewBox="0 0 280 150" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <rect x="0" y="0" width="280" height="150" rx="8" fill="#0f1520"/>
+            <!-- Upload zone -->
+            <rect x="14" y="10" width="252" height="60" rx="6" fill="#161e2e" stroke="#243448" stroke-width="1.5" stroke-dasharray="4,3"/>
+            <text x="110" y="33" font-size="16" fill="#22c55e" text-anchor="middle">📊</text>
+            <text x="140" y="50" font-size="7.5" fill="#94a3b8" text-anchor="middle">Click or drag Excel file here</text>
+            <text x="140" y="62" font-size="6.5" fill="#64748b" text-anchor="middle">اضغط أو اسحب ملف Excel هنا</text>
+            <!-- Arrow down -->
+            <path d="M140 75 L140 88" stroke="#22c55e" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <polygon points="136,86 144,86 140,92" fill="#22c55e"/>
+            <!-- Loaded state -->
+            <rect x="14" y="94" width="252" height="20" rx="5" fill="#0d2a17" stroke="#22c55e" stroke-width="1.5"/>
+            <text x="24" y="107" font-size="7.5" fill="#22c55e">✅ PAMG 214 loaded — 37 students</text>
+            <!-- Course list -->
+            <rect x="14" y="120" width="252" height="14" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <circle cx="24" cy="127" r="4" fill="#3b82f6"/>
+            <text x="32" y="130" font-size="6.5" fill="#94a3b8">PAMG 214 · Pathology · 37 students</text>
+            <text x="252" y="130" font-size="8" fill="#64748b" text-anchor="end">✕</text>
+            <rect x="14" y="136" width="252" height="10" rx="3" fill="#161e2e" stroke="#1e2d42" stroke-width="0.5" opacity="0.5"/>
+            <circle cx="24" cy="141" r="3" fill="#22c55e" opacity="0.5"/>
+            <text x="32" y="144" font-size="5.5" fill="#64748b" opacity="0.5">BEHS 201 · Behavioral Sciences · 29 students</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Step 1.3 Schedule -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--yellow);color:#000;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">STEP 3</span>
+          <span style="font-size:0.88rem;font-weight:600;">Build Weekly Schedule · بناء الجدول الأسبوعي</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              Select <strong style="color:var(--yellow);">Day</strong> + <strong style="color:var(--yellow);">Time</strong> + <strong style="color:var(--yellow);">Course</strong> → click Add. Repeat for all lectures. Your schedule will show on the Schedule tab.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;">
+              اختر <strong style="color:var(--yellow);">اليوم</strong> + <strong style="color:var(--yellow);">الوقت</strong> + <strong style="color:var(--yellow);">المادة</strong> ← اضغط Add. كرر لكل المحاضرات. سيظهر جدولك في تبويب Schedule.
+            </p>
+          </div>
+          <svg viewBox="0 0 280 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <rect x="0" y="0" width="280" height="140" rx="8" fill="#0f1520"/>
+            <!-- 3 dropdowns row -->
+            <rect x="14" y="12" width="72" height="22" rx="4" fill="#1c2738" stroke="#eab308" stroke-width="1.5"/>
+            <text x="22" y="27" font-size="7" fill="#e2e8f0">Sunday</text>
+            <text x="76" y="27" font-size="9" fill="#eab308">▾</text>
+            <rect x="92" y="12" width="56" height="22" rx="4" fill="#1c2738" stroke="#1e2d42" stroke-width="1"/>
+            <text x="100" y="27" font-size="7" fill="#e2e8f0">09:00</text>
+            <rect x="154" y="12" width="82" height="22" rx="4" fill="#1c2738" stroke="#1e2d42" stroke-width="1"/>
+            <text x="162" y="27" font-size="7" fill="#e2e8f0">PAMG 214</text>
+            <rect x="242" y="12" width="28" height="22" rx="4" fill="#3b82f6"/>
+            <text x="250" y="27" font-size="7" fill="white" font-weight="bold">+</text>
+            <!-- Arrow -->
+            <path d="M140 38 L140 50" stroke="#eab308" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <polygon points="136,48 144,48 140,54" fill="#eab308"/>
+            <!-- Schedule entries -->
+            <rect x="14" y="56" width="252" height="16" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="67" font-size="7" fill="#3b82f6" font-family="monospace">Sunday</text>
+            <text x="70" y="67" font-size="7" fill="#64748b" font-family="monospace">09:00</text>
+            <text x="108" y="67" font-size="7" fill="#94a3b8">PAMG 214 — Pathology</text>
+            <text x="258" y="67" font-size="8" fill="#64748b" text-anchor="end">✕</text>
+            <rect x="14" y="75" width="252" height="16" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="86" font-size="7" fill="#3b82f6" font-family="monospace">Monday</text>
+            <text x="70" y="86" font-size="7" fill="#64748b" font-family="monospace">10:00</text>
+            <text x="108" y="86" font-size="7" fill="#94a3b8">ETHC 211 — Ethics</text>
+            <rect x="14" y="94" width="252" height="16" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="105" font-size="7" fill="#3b82f6" font-family="monospace">Tuesday</text>
+            <text x="70" y="105" font-size="7" fill="#64748b" font-family="monospace">08:00</text>
+            <text x="108" y="105" font-size="7" fill="#94a3b8">PHYG 214 — Physiology</text>
+            <!-- Result preview -->
+            <rect x="14" y="116" width="252" height="18" rx="4" fill="#0d1a2e" stroke="#3b82f6" stroke-width="1" opacity="0.8"/>
+            <text x="20" y="128" font-size="7" fill="#3b82f6">✅ Schedule ready — visible on Schedule tab</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 2: ATTENDANCE ── -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(239,68,68,0.1);border:1px solid rgba(239,68,68,0.3);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">✋</div>
+        <div>
+          <div style="font-size:0.92rem;font-weight:700;">Taking Attendance — Daily Workflow</div>
+          <div style="font-size:0.75rem;color:var(--text3);">أخذ الحضور — العمل اليومي</div>
+        </div>
+      </div>
+
+      <!-- Manual attendance -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--red);color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">PART 1</span>
+          <span style="font-size:0.88rem;font-weight:600;">Manual Attendance in the Room · التحضير اليدوي في القاعة</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              Select a course → you'll see its <strong style="color:var(--cyan);">session history</strong> and a <strong style="color:var(--green);">➕ New Session</strong> button → press New Session to start. Students appear as cards sorted by seat number → <strong style="color:var(--red);">Tap empty seats</strong> to mark absent (turns red). Tap again to undo.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;margin-bottom:10px;">
+              افتح المادة ← يظهر الطلاب كبطاقات مرتبة برقم المقعد ← <strong style="color:var(--red);">اضغط المقاعد الفاضية</strong> لتغييبها (تصبح حمراء). اضغط مرة ثانية للإلغاء.
+            </p>
+            <div style="background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.25);border-radius:6px;padding:10px;font-size:0.75rem;color:var(--yellow);">
+              💡 <strong>Tip · نصيحة:</strong><br/>
+              If most students are absent, click "Mark All Absent" then unmark the present ones.<br/>
+              <span style="color:var(--text3);font-size:0.72rem;">إذا أغلب الطلاب غائبين، اضغط "Mark All Absent" ثم ألغِ الحاضرين.</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <rect x="0" y="0" width="280" height="160" rx="8" fill="#0f1520"/>
+            <!-- Header -->
+            <rect x="0" y="0" width="280" height="24" rx="8" fill="#161e2e"/>
+            <rect x="0" y="16" width="280" height="8" fill="#161e2e"/>
+            <text x="14" y="16" font-size="7.5" fill="#e2e8f0" font-weight="bold">PAMG 214 · Room S-A003</text>
+            <rect x="218" y="6" width="52" height="12" rx="4" fill="#1c2738" stroke="#eab308" stroke-width="1"/>
+            <text x="224" y="15" font-size="6.5" fill="#eab308" font-family="monospace">⏱ 04:32</text>
+            <!-- Student grid -->
+            <!-- Present cards -->
+            <rect x="14" y="30" width="54" height="38" rx="5" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="42" font-size="5.5" fill="#64748b" font-family="monospace">SEAT 1</text>
+            <text x="20" y="52" font-size="6" fill="#94a3b8">Alanazi</text>
+            <text x="20" y="61" font-size="5" fill="#64748b">45-1-1-0002</text>
+
+            <!-- ABSENT card -->
+            <rect x="74" y="30" width="54" height="38" rx="5" fill="#2a1515" stroke="#ef4444" stroke-width="1.5"/>
+            <rect x="101" y="32" width="24" height="10" rx="2" fill="#ef4444"/>
+            <text x="106" y="40" font-size="5.5" fill="white" font-weight="bold">ABSENT</text>
+            <text x="80" y="52" font-size="5.5" fill="#ef4444" font-family="monospace">SEAT 2</text>
+            <text x="80" y="61" font-size="6" fill="#f87171">Aldhafeeri</text>
+            <!-- Tap indicator -->
+            <circle cx="101" cy="49" r="8" fill="none" stroke="#ef4444" stroke-width="1" opacity="0.4"/>
+            <text x="97" y="52" font-size="8">👆</text>
+
+            <rect x="134" y="30" width="54" height="38" rx="5" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="140" y="42" font-size="5.5" fill="#64748b" font-family="monospace">SEAT 3</text>
+            <text x="140" y="52" font-size="6" fill="#94a3b8">Almutairi</text>
+
+            <rect x="194" y="30" width="54" height="38" rx="5" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="200" y="42" font-size="5.5" fill="#64748b" font-family="monospace">SEAT 4</text>
+            <text x="200" y="52" font-size="6" fill="#94a3b8">Alquod</text>
+
+            <!-- Row 2 -->
+            <rect x="14" y="74" width="54" height="38" rx="5" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="86" font-size="5.5" fill="#64748b" font-family="monospace">SEAT 5</text>
+            <rect x="74" y="74" width="54" height="38" rx="5" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="80" y="86" font-size="5.5" fill="#64748b" font-family="monospace">SEAT 6</text>
+            <rect x="134" y="74" width="54" height="38" rx="5" fill="#2a1515" stroke="#ef4444" stroke-width="1.5"/>
+            <rect x="154" y="76" width="24" height="10" rx="2" fill="#ef4444"/>
+            <text x="159" y="84" font-size="5.5" fill="white" font-weight="bold">ABSENT</text>
+            <text x="140" y="96" font-size="5.5" fill="#ef4444" font-family="monospace">SEAT 7</text>
+            <rect x="194" y="74" width="54" height="38" rx="5" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="200" y="86" font-size="5.5" fill="#64748b" font-family="monospace">SEAT 8</text>
+
+            <!-- Bottom bar -->
+            <rect x="14" y="120" width="120" height="14" rx="4" fill="#2a1515" stroke="#ef4444" stroke-width="1"/>
+            <text x="20" y="130" font-size="7" fill="#ef4444" font-weight="bold">Absent: 2</text>
+            <rect x="140" y="120" width="60" height="14" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="146" y="130" font-size="6.5" fill="#94a3b8">Mark All</text>
+            <rect x="206" y="120" width="60" height="14" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="212" y="130" font-size="6.5" fill="#94a3b8">All Present</text>
+
+            <!-- Search bar -->
+            <rect x="14" y="140" width="252" height="14" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="20" y="150" font-size="6.5" fill="#64748b">🔍 Search by name or seat number...</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- SAS Match -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--accent);color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">PART 2</span>
+          <span style="font-size:0.88rem;font-weight:600;">Upload SAS & Match · رفع ملف SAS والمطابقة</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              Export the Excel file from the SAS app → Upload it in the SAS section → Click <strong style="color:var(--accent);">Match</strong>. Results appear instantly.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;margin-bottom:12px;">
+              صدّر ملف Excel من تطبيق SAS ← ارفعه في قسم SAS ← اضغط <strong style="color:var(--accent);">Match</strong>. النتائج تظهر فوراً.
+            </p>
+            <!-- Result legend -->
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#ef4444;flex-shrink:0;"></div>
+                <span style="color:var(--text2);"><strong>Absent</strong> — غائب يدوياً + غائب إلكترونياً</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#eab308;flex-shrink:0;"></div>
+                <span style="color:var(--text2);"><strong>Escaped 🏃</strong> — غائب يدوياً + حاضر إلكترونياً</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#22c55e;flex-shrink:0;"></div>
+                <span style="color:var(--text2);"><strong>Not Registered</strong> — حاضر يدوياً + غائب إلكترونياً</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;font-size:0.75rem;">
+                <div style="width:10px;height:10px;border-radius:50%;background:#06b6d4;flex-shrink:0;"></div>
+                <span style="color:var(--text2);"><strong>Excused</strong> — غائب بإذن من الدكتور</span>
+              </div>
+            </div>
+          </div>
+          <svg viewBox="0 0 280 180" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <rect x="0" y="0" width="280" height="180" rx="8" fill="#0f1520"/>
+            <!-- Upload zone loaded -->
+            <rect x="14" y="10" width="252" height="28" rx="5" fill="#0d2a17" stroke="#22c55e" stroke-width="1.5"/>
+            <text x="24" y="28" font-size="7.5" fill="#22c55e">✅ SAS-PAMG-2026.xlsx — 37 records</text>
+            <!-- Match button -->
+            <rect x="14" y="44" width="252" height="16" rx="5" fill="#3b82f6"/>
+            <text x="100" y="55" font-size="8" fill="white" font-weight="bold">⚡ Match &amp; Show Results</text>
+            <!-- Arrow -->
+            <path d="M140 64 L140 74" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <polygon points="136,72 144,72 140,78" fill="#3b82f6"/>
+            <!-- Results -->
+            <rect x="14" y="80" width="252" height="20" rx="5" fill="#1a0a0a" stroke="#ef4444" stroke-width="1"/>
+            <circle cx="24" cy="90" r="4" fill="#ef4444"/>
+            <text x="32" y="94" font-size="7" fill="#e2e8f0">Absent</text>
+            <text x="32" y="104" font-size="6" fill="#64748b">Absent from room &amp; absent electronically</text>
+            <rect x="222" y="83" width="36" height="14" rx="4" fill="#2a1515" stroke="#ef4444" stroke-width="1"/>
+            <text x="233" y="93" font-size="8" fill="#ef4444" font-weight="bold">7</text>
+
+            <rect x="14" y="104" width="252" height="20" rx="5" fill="#1a1500" stroke="#eab308" stroke-width="1"/>
+            <circle cx="24" cy="114" r="4" fill="#eab308"/>
+            <text x="32" y="118" font-size="7" fill="#e2e8f0">Escaped 🏃</text>
+            <rect x="222" y="107" width="36" height="14" rx="4" fill="#2a2000" stroke="#eab308" stroke-width="1"/>
+            <text x="233" y="117" font-size="8" fill="#eab308" font-weight="bold">3</text>
+            <!-- Mark as excused button shown -->
+            <rect x="148" y="107" width="68" height="14" rx="3" fill="rgba(6,182,212,0.1)" stroke="rgba(6,182,212,0.3)" stroke-width="1"/>
+            <text x="155" y="117" font-size="5.5" fill="#06b6d4">Mark as Excused</text>
+
+            <rect x="14" y="128" width="252" height="20" rx="5" fill="#0a1a0a" stroke="#22c55e" stroke-width="1"/>
+            <circle cx="24" cy="138" r="4" fill="#22c55e"/>
+            <text x="32" y="142" font-size="7" fill="#e2e8f0">Not Registered in App</text>
+            <rect x="222" y="131" width="36" height="14" rx="4" fill="#0d2a0d" stroke="#22c55e" stroke-width="1"/>
+            <text x="233" y="141" font-size="8" fill="#22c55e" font-weight="bold">1</text>
+
+            <!-- Export row -->
+            <rect x="14" y="154" width="120" height="18" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="38" y="166" font-size="7" fill="#94a3b8">📥 Export Excel</text>
+            <rect x="140" y="154" width="126" height="18" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="168" y="166" font-size="7" fill="#94a3b8">📄 Export CSV</text>
+          </svg>
+        </div>
+      </div>
+
+      <!-- Excused -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--cyan);color:#000;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">PART 3</span>
+          <span style="font-size:0.88rem;font-weight:600;">Mark as Excused · تحديد المأذون</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              If a student appears as <strong style="color:var(--yellow);">Escaped</strong> but was actually given permission to leave early, click <strong style="color:var(--cyan);">Mark as Excused</strong> → enter the reason. The record is corrected automatically.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;">
+              إذا ظهر طالب كـ <strong style="color:var(--yellow);">Escaped</strong> لكنه كان مأذوناً، اضغط <strong style="color:var(--cyan);">Mark as Excused</strong> ← أدخل السبب. يُصحَّح السجل تلقائياً.
+            </p>
+          </div>
+          <svg viewBox="0 0 280 130" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <rect x="0" y="0" width="280" height="130" rx="8" fill="#0f1520"/>
+            <!-- Escaped row with button -->
+            <rect x="14" y="12" width="252" height="28" rx="5" fill="#1a1500" stroke="#eab308" stroke-width="1"/>
+            <rect x="20" y="18" width="30" height="16" rx="3" fill="#2a2000"/>
+            <text x="26" y="30" font-size="7" fill="#eab308" font-weight="bold">SEAT 7</text>
+            <text x="56" y="30" font-size="7" fill="#e2e8f0">Aldhafeeri, Mohammed</text>
+            <rect x="166" y="17" width="60" height="15" rx="3" fill="rgba(6,182,212,0.12)" stroke="rgba(6,182,212,0.4)" stroke-width="1"/>
+            <text x="172" y="27" font-size="6" fill="#06b6d4">Mark as Excused</text>
+            <rect x="232" y="17" width="28" height="15" rx="3" fill="#2a2000" stroke="#eab308" stroke-width="1"/>
+            <text x="238" y="27" font-size="6.5" fill="#eab308">Escaped</text>
+            <!-- Arrow + modal -->
+            <path d="M196 44 L196 54" stroke="#06b6d4" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <polygon points="192,52 200,52 196,58" fill="#06b6d4"/>
+            <!-- Excused modal -->
+            <rect x="40" y="60" width="200" height="62" rx="6" fill="#161e2e" stroke="#06b6d4" stroke-width="1.5"/>
+            <text x="50" y="76" font-size="8" fill="#e2e8f0" font-weight="bold">Mark as Excused</text>
+            <text x="50" y="88" font-size="6.5" fill="#94a3b8">Aldhafeeri, Mohammed Saqer</text>
+            <rect x="50" y="92" width="140" height="14" rx="3" fill="#1c2738" stroke="#1e2d42" stroke-width="1"/>
+            <text x="56" y="102" font-size="6.5" fill="#64748b">Reason: Permitted by lecturer</text>
+            <rect x="50" y="110" width="140" height="10" rx="3" fill="#0d3324" stroke="#22c55e" stroke-width="1"/>
+            <text x="90" y="118" font-size="6.5" fill="#22c55e" font-weight="bold">✓ Mark as Excused</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 3: REPORTS ── -->
+    <div style="margin-bottom:32px;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(168,85,247,0.1);border:1px solid rgba(168,85,247,0.3);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">📋</div>
+        <div>
+          <div style="font-size:0.92rem;font-weight:700;">Reports — Sheets for Administration</div>
+          <div style="font-size:0.75rem;color:var(--text3);">الكشوف — للطباعة والإدارة</div>
+        </div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;">
+          <div>
+            <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+              Go to <strong style="color:var(--purple);">Reports tab</strong> → Select a course from the left sidebar → Choose the sheet type → Export as <strong>PDF</strong> or <strong>Excel</strong>.
+            </p>
+            <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;margin-bottom:12px;">
+              اذهب لتبويب <strong style="color:var(--purple);">Reports</strong> ← اختر مادة من القائمة اليسرى ← اختر نوع الكشف ← صدّره كـ <strong>PDF</strong> أو <strong>Excel</strong>.
+            </p>
+            <div style="background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.25);border-radius:6px;padding:10px;font-size:0.75rem;color:var(--cyan);">
+              👥 <strong>Covering for a colleague · تغطية زميل:</strong><br/>
+              <span style="color:var(--text3);font-size:0.72rem;">You can view and download any colleague's sheets. Select their course from the sidebar.</span><br/>
+              <span style="color:var(--text3);font-size:0.72rem;">تقدر تشوف وتحمل كشوف أي زميل. اختر مادته من القائمة.</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 280 160" xmlns="http://www.w3.org/2000/svg" style="width:100%;border-radius:8px;background:#0f1520;border:1px solid #1e2d42;">
+            <rect x="0" y="0" width="280" height="160" rx="8" fill="#0f1520"/>
+            <!-- Sidebar -->
+            <rect x="0" y="0" width="80" height="160" rx="8" fill="#161e2e"/>
+            <rect x="80" y="0" width="4" height="160" fill="#0f1520"/>
+            <text x="10" y="22" font-size="6" fill="#64748b" font-weight="600">COURSES</text>
+            <!-- Course buttons in sidebar -->
+            <rect x="6" y="28" width="68" height="22" rx="4" fill="#0d1e3d" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="12" y="38" font-size="6" fill="#3b82f6" font-family="monospace">PAMG 214</text>
+            <text x="12" y="47" font-size="5.5" fill="#94a3b8">Pathology</text>
+            <rect x="6" y="54" width="68" height="22" rx="4" fill="transparent"/>
+            <text x="12" y="64" font-size="6" fill="#64748b" font-family="monospace">ETHC 211</text>
+            <text x="12" y="73" font-size="5.5" fill="#64748b">Ethics</text>
+            <rect x="6" y="80" width="68" height="22" rx="4" fill="transparent"/>
+            <text x="12" y="90" font-size="6" fill="#64748b" font-family="monospace">BEHS 201</text>
+            <text x="12" y="99" font-size="5.5" fill="#64748b">Behavioral</text>
+            <text x="10" y="118" font-size="6" fill="#64748b" font-weight="600">COLLEAGUES</text>
+            <text x="12" y="132" font-size="6" fill="#64748b">👤 ahmed</text>
+            <text x="12" y="144" font-size="6" fill="#64748b">👤 sarah</text>
+            <!-- Main area -->
+            <!-- Type selector -->
+            <rect x="88" y="10" width="58" height="20" rx="4" fill="#0d1e3d" stroke="#3b82f6" stroke-width="1.5"/>
+            <text x="94" y="23" font-size="6" fill="#3b82f6">📋 Attendance</text>
+            <rect x="150" y="10" width="52" height="20" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="156" y="23" font-size="6" fill="#64748b">📝 Monthly</text>
+            <rect x="206" y="10" width="66" height="20" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="212" y="23" font-size="6" fill="#64748b">📌 Final Exam</text>
+            <!-- Preview table -->
+            <rect x="88" y="36" width="184" height="80" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <rect x="88" y="36" width="184" height="14" rx="4" fill="#1c2738"/>
+            <text x="96" y="46" font-size="5.5" fill="#64748b">Seat</text>
+            <text x="114" y="46" font-size="5.5" fill="#64748b">Name</text>
+            <text x="196" y="46" font-size="5.5" fill="#64748b">Campus ID</text>
+            <text x="248" y="46" font-size="5.5" fill="#64748b">Sign</text>
+            <line x1="88" y1="50" x2="272" y2="50" stroke="#1e2d42" stroke-width="0.5"/>
+            <text x="96" y="60" font-size="5.5" fill="#94a3b8">1</text>
+            <text x="114" y="60" font-size="5.5" fill="#94a3b8">Aldhafeeri, Mohammed</text>
+            <text x="196" y="60" font-size="5" fill="#64748b" font-family="monospace">44-1-1-0506</text>
+            <line x1="88" y1="64" x2="272" y2="64" stroke="#1e2d42" stroke-width="0.5"/>
+            <text x="96" y="74" font-size="5.5" fill="#94a3b8">2</text>
+            <text x="114" y="74" font-size="5.5" fill="#94a3b8">Alanazi, Ibrahim</text>
+            <line x1="88" y1="78" x2="272" y2="78" stroke="#1e2d42" stroke-width="0.5"/>
+            <text x="96" y="88" font-size="5.5" fill="#94a3b8">3</text>
+            <text x="114" y="88" font-size="5.5" fill="#94a3b8">Almutairi, Abdulelah</text>
+            <line x1="88" y1="92" x2="272" y2="92" stroke="#1e2d42" stroke-width="0.5"/>
+            <text x="96" y="102" font-size="5" fill="#64748b" opacity="0.5">4 · 5 · 6 · ... 37 students</text>
+            <!-- Export buttons -->
+            <rect x="88" y="122" width="88" height="16" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="102" y="133" font-size="6.5" fill="#94a3b8">📥 Export Excel</text>
+            <rect x="182" y="122" width="90" height="16" rx="4" fill="#161e2e" stroke="#1e2d42" stroke-width="1"/>
+            <text x="198" y="133" font-size="6.5" fill="#94a3b8">🖨 Export PDF</text>
+            <!-- Arrow to PDF -->
+            <path d="M228 138 L228 148" stroke="#a855f7" stroke-width="1.5" stroke-dasharray="3,2"/>
+            <polygon points="224,146 232,146 228,152" fill="#a855f7"/>
+            <text x="196" y="158" font-size="6" fill="#a855f7">Opens print dialog · تفتح نافذة الطباعة</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── SECTION 4: ANALYTICS ── -->
+    <div id="helpAnalyticsSection" style="margin-bottom:32px;display:none;">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;padding-bottom:10px;border-bottom:1px solid var(--border);">
+        <div style="width:32px;height:32px;border-radius:50%;background:rgba(234,179,8,0.1);border:1px solid rgba(234,179,8,0.3);display:flex;align-items:center;justify-content:center;font-size:0.85rem;flex-shrink:0;">📊</div>
+        <div>
+          <div style="font-size:0.92rem;font-weight:700;">Analytics — Proving Manual is Redundant <span class="badge b-purple" style="font-size:0.62rem;vertical-align:middle;">Admin Only</span></div>
+          <div style="font-size:0.75rem;color:var(--text3);">التحليلات — إثبات أن الحضور اليدوي غير ضروري</div>
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--yellow);color:#000;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">PART 1</span>
+          <span style="font-size:0.88rem;font-weight:600;">Sessions Log · سجل الجلسات</span>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+          Every recorded session appears in the <strong style="color:var(--yellow);">Analytics tab</strong>. Columns include: Course · Staff · Total Students · Electronic Absent · Manual Absent · Escaped · Excused · Accuracy %.
+        </p>
+        <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;">
+          كل جلسة مسجلة تظهر في تبويب <strong style="color:var(--yellow);">Analytics</strong>. الأعمدة تشمل: المادة · الموظف · إجمالي الطلاب · الغياب الإلكتروني · الغياب اليدوي · المهربين · المأذونين · دقة %.
+        </p>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;margin-bottom:12px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--orange);color:#000;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">PART 2</span>
+          <span style="font-size:0.88rem;font-weight:600;">ROI Report · تقرير العائد مقابل التكلفة</span>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+          The ROI section calculates: <strong>total staff hours</strong> spent on manual attendance, <strong>escaped students caught per hour</strong>, and <strong>errors introduced by manual process</strong> (incorrectly marked students). Use this report in management meetings to demonstrate inefficiency.
+        </p>
+        <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;">
+          قسم ROI يحسب: إجمالي ساعات الموظفين على الحضور اليدوي، عدد المهربين المكتشفين في الساعة، والأخطاء التي أدخلها النظام اليدوي. استخدم هذا التقرير في اجتماعات الإدارة لإثبات عدم الكفاءة.
+        </p>
+        <div style="background:var(--yellow-dim);border:1px solid rgba(234,179,8,0.3);border-radius:6px;padding:10px;font-size:0.75rem;color:var(--yellow);margin-top:10px;">
+          💡 <strong>Tip:</strong> Export the full analytics report via <em>Export Excel</em> in the Analytics tab for official documentation · صدّر التقرير الكامل من <em>Export Excel</em> في تبويب Analytics للتوثيق الرسمي.
+        </div>
+      </div>
+
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--rl);padding:20px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+          <span style="background:var(--purple);color:#fff;font-size:0.68rem;font-weight:700;padding:2px 8px;border-radius:4px;font-family:var(--mono);">PART 3</span>
+          <span style="font-size:0.88rem;font-weight:600;">Top Absentees · أكثر الطلاب غياباً</span>
+        </div>
+        <p style="font-size:0.8rem;color:var(--text2);line-height:1.7;margin-bottom:8px;">
+          The bottom of the Analytics tab lists top absentee students across all courses. Click any student name to jump to their full attendance history in the <strong style="color:var(--purple);">Students tab</strong>.
+        </p>
+        <p style="font-size:0.78rem;color:var(--text3);line-height:1.7;">
+          أسفل تبويب Analytics يعرض أكثر الطلاب غياباً عبر كل المواد. اضغط على اسم أي طالب للانتقال مباشرة لسجله الكامل في تبويب <strong style="color:var(--purple);">Students</strong>.
+        </p>
+      </div>
+    </div>
+
+
+    <!-- Bottom CTA -->
+    <div style="background:var(--accent-glow);border:1px solid rgba(59,130,246,0.25);border-radius:var(--rl);padding:20px;text-align:center;">
+      <div style="font-size:1.1rem;margin-bottom:8px;">🚀</div>
+      <div style="font-size:0.88rem;font-weight:600;margin-bottom:4px;">Ready to get started? · جاهز تبدأ؟</div>
+      <div style="font-size:0.78rem;color:var(--text3);margin-bottom:14px;">Start with Setup to configure your term · ابدأ بالإعداد لتهيئة ترمك</div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="showPage('setup')">⚙️ Go to Setup</button>
+        <button class="btn btn-ghost" onclick="startTour()">▶ Start Interactive Tour</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="footer">Designed and developed by: Ghamdisult &nbsp;·&nbsp; 2026</div>
+</div>
+
+<!-- ══ ADMIN PANEL ════════════════════════════════ -->
+<div class="overlay" id="adminOverlay">
+  <div class="modal">
+    <div class="modal-hdr">
+      <h2>🔐 Admin Panel</h2>
+      <button class="btn btn-ghost" onclick="closeAdmin()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-section">
+        <h3>System Statistics</h3>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;">
+          <div class="stat-card"><div class="stat-num" id="adUsers" style="color:var(--accent)">—</div><div class="stat-lbl">Users</div></div>
+          <div class="stat-card"><div class="stat-num" id="adCourses" style="color:var(--green)">—</div><div class="stat-lbl">Courses</div></div>
+          <div class="stat-card"><div class="stat-num" id="adSessions" style="color:var(--yellow)">—</div><div class="stat-lbl">Sessions</div></div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Users</h3>
+        <table class="ut">
+          <thead><tr><th>Username</th><th>Role</th><th>Last Login</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="usersBody"></tbody>
+        </table>
+
+        <!-- Add / Edit user form -->
+        <div style="margin-top:14px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:14px;">
+          <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">Add New User</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:8px;">
+            <div class="field" style="margin:0;"><label>Username</label>
+              <input class="input" type="text" id="nuName" placeholder="e.g. ahmed" />
+            </div>
+            <div class="field" style="margin:0;"><label>Password</label>
+              <input class="input" type="password" id="nuPass" placeholder="Password" />
+            </div>
+            <div class="field" style="margin:0;"><label>Role</label>
+              <select class="input" id="nuRole" onchange="renderTeamSelector({role:this.value,team:[]})">
+                <option value="user">User</option>
+                <option value="teamlead">Team Lead</option>
+                <option value="admin">Admin</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Team selector (shows when teamlead selected) -->
+          <div id="teamSelectorWrap" style="display:none;margin-bottom:10px;">
+            <div style="font-size:0.72rem;font-weight:600;color:var(--cyan);margin-bottom:6px;">Team Members (select who reports to this Team Lead):</div>
+            <div id="teamMembersList" style="display:flex;flex-direction:column;gap:4px;max-height:150px;overflow-y:auto;"></div>
+          </div>
+
+          <!-- Edit panel -->
+          <div id="editUserPanel" style="display:none;margin-bottom:8px;padding:8px;background:rgba(234,179,8,0.08);border:1px solid rgba(234,179,8,0.2);border-radius:6px;">
+            <div style="font-size:0.72rem;color:var(--yellow);margin-bottom:6px;">✏️ Editing user — leave password blank to keep current</div>
+          </div>
+
+          <div style="display:flex;gap:8px;">
+            <button class="btn btn-primary" onclick="addUser()" style="flex:1;">Add User</button>
+            <button class="btn btn-ghost" id="saveEditBtn" onclick="saveEditUser()" style="display:none;">✓ Save Changes</button>
+            <button class="btn btn-ghost" id="cancelEditBtn" onclick="cancelEdit()" style="display:none;">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="modal-section">
+        <h3>Term Management</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-ghost" onclick="extendAll()">+ Extend Term (All Users)</button>
+          <button class="btn btn-danger" onclick="clearAll()">🗑 Clear All Data (New Term)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Export Options modal -->
+<div class="overlay" id="exportOptionsOverlay">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-hdr">
+      <h2>📤 Export Options</h2>
+      <button class="btn btn-ghost" onclick="closeExportOptions()">✕</button>
+    </div>
+    <div class="modal-body" id="exportOptionsBody"></div>
+  </div>
+</div>
+
+<!-- Team View modal -->
+
+<!-- Report type modal -->
+<div class="overlay" id="reportModalOverlay">
+  <div class="modal" style="max-width:420px;">
+    <div class="modal-hdr">
+      <h2>📋 Export Report</h2>
+      <button class="btn btn-ghost" onclick="closeReportModal()">✕</button>
+    </div>
+    <div class="modal-body" id="reportModalBody"></div>
+  </div>
+</div>
+
+<!-- Excused reason modal -->
+<div class="overlay" id="excuseOverlay">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-hdr"><h2>✅ Mark as Excused</h2><button class="btn btn-ghost" onclick="closeExcuse()">✕</button></div>
+    <div class="modal-body">
+      <p style="font-size:0.82rem;color:var(--text2);margin-bottom:14px;" id="excuseStudentName">—</p>
+      <div class="field" style="margin-bottom:10px;">
+        <label style="font-size:0.75rem;margin-bottom:6px;display:block;">نوع العذر / Excuse Type</label>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:var(--r);cursor:pointer;font-size:0.8rem;">
+            <input type="radio" name="excuseType" value="medical" id="etMedical" style="accent-color:var(--green);">
+            <span>🏥 عذر طبي / Medical</span>
+          </label>
+          <label style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--surface2);border-radius:var(--r);cursor:pointer;font-size:0.8rem;">
+            <input type="radio" name="excuseType" value="other" id="etOther" style="accent-color:var(--yellow);" checked>
+            <span>📋 عذر آخر / Other</span>
+          </label>
+        </div>
+      </div>
+      <div class="field">
+        <label>السبب / Reason <span style="color:var(--text3);font-size:0.68rem;">(اختياري)</span></label>
+        <input class="input" type="text" id="excuseReason" placeholder="e.g. Permitted by lecturer / مصاب بكسر" />
+      </div>
+      <button class="btn btn-success btn-full" onclick="confirmExcuse()">✓ Mark as Excused</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ EXPORT DIALOG ══════════════════════════════ -->
+<div class="overlay" id="exportDialog">
+  <div class="modal" style="max-width:520px;">
+    <div class="modal-hdr">
+      <h2>📥 تخصيص تقرير التصدير</h2>
+      <button class="btn btn-ghost" onclick="closeExportDialog()">✕</button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:0.75rem;color:var(--text3);margin-bottom:16px;">اختر ما تريد تضمينه في ملف Excel</p>
+
+      <!-- Sheet 1 -->
+      <div style="margin-bottom:14px;background:var(--surface2);border-radius:var(--r);overflow:hidden;">
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;border-bottom:1px solid var(--border);">
+          <input type="checkbox" id="expSheetSessions" checked style="accent-color:var(--accent);width:15px;height:15px;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:600;">📋 تفاصيل الجلسات / Session Details</div>
+            <div style="font-size:0.68rem;color:var(--text3);margin-top:2px;">كل جلسة بتواريخها وأرقامها</div>
+          </div>
+        </label>
+        <div id="expSessionFields" style="padding:10px 13px 12px;display:flex;flex-direction:column;gap:6px;">
+          <div style="font-size:0.7rem;color:var(--text3);margin-bottom:4px;">الحقول المضمّنة:</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="staff" checked style="accent-color:var(--accent);"> الموظف / Staff</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="escaped" checked style="accent-color:var(--accent);"> المهرّبون / Escaped</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="excused" checked style="accent-color:var(--accent);"> المأذونون / Excused</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="stafferrors" checked style="accent-color:var(--accent);"> أخطاء يدوي / Staff Errors</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="accuracy" checked style="accent-color:var(--accent);"> الدقة % / Accuracy</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="duration" checked style="accent-color:var(--accent);"> مدة الجلسة / Duration</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="mode" checked style="accent-color:var(--accent);"> نوع الجلسة / Mode</label>
+            <label style="display:flex;align-items:center;gap:6px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" class="expField" value="reason" checked style="accent-color:var(--accent);"> السبب / Reason</label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sheet 2 -->
+      <div style="margin-bottom:14px;background:var(--surface2);border-radius:var(--r);">
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;">
+          <input type="checkbox" id="expSheetROI" checked style="accent-color:var(--accent);width:15px;height:15px;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:600;">⚖️ ملخص ROI / ROI Summary</div>
+            <div style="font-size:0.68rem;color:var(--text3);margin-top:2px;">الساعات + الاصطياد + الأخطاء + التوصية</div>
+          </div>
+        </label>
+      </div>
+
+      <!-- Sheet 3 -->
+      <div style="margin-bottom:20px;background:var(--surface2);border-radius:var(--r);">
+        <label style="display:flex;align-items:center;gap:10px;padding:10px 13px;cursor:pointer;">
+          <input type="checkbox" id="expSheetAbsentees" checked style="accent-color:var(--accent);width:15px;height:15px;">
+          <div>
+            <div style="font-size:0.82rem;font-weight:600;">🔴 أكثر الطلاب غياباً / Top Absentees</div>
+            <div style="font-size:0.68rem;color:var(--text3);margin-top:2px;">قائمة مرتّبة بعدد الغيابات</div>
+          </div>
+        </label>
+      </div>
+
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-ghost" onclick="closeExportDialog()" style="flex:1;">إلغاء</button>
+        <button class="btn btn-success" onclick="runExport()" style="flex:2;">📥 تصدير Excel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOUR ════════════════════════════════════════ -->
+<div class="tour-overlay" id="tourOverlay">
+  <div class="tour-backdrop" onclick="endTour()"></div>
+  <div class="tour-box" id="tourBox">
+    <div class="tour-step-num" id="tourStepNum">Step 1 of 6</div>
+    <div class="tour-title" id="tourTitle">—</div>
+    <div class="tour-desc" id="tourDesc">—</div>
+    <div class="tour-nav">
+      <div class="tour-dots" id="tourDots"></div>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-ghost" onclick="endTour()">Skip</button>
+        <button class="btn btn-primary" id="tourNext" onclick="nextTourStep()">Next →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Help floating button -->
+<div class="help-btn" onclick="showPage('help')" title="Help Center">❓</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="js/data.js"></script>
+<script src="js/storage.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/schedule.js"></script>
+<script src="js/attendance.js"></script>
+<script src="js/reports.js"></script>
+<script src="js/analytics.js"></script>
+<script src="js/admin.js"></script>
+</body>
+</html>
