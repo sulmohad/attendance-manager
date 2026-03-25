@@ -352,6 +352,7 @@ select.input{cursor:pointer;}
 /* ══ HELP / TOUR ════════════════════════════════ */
 .help-btn{position:fixed;bottom:20px;right:20px;width:44px;height:44px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.1rem;box-shadow:0 4px 20px rgba(59,130,246,0.4);z-index:500;transition:transform 0.2s;}
 .help-btn:hover{transform:scale(1.1);}
+@media(max-width:600px){.help-btn{bottom:68px;}}
 
 /* Tour overlay */
 .tour-overlay{display:none;position:fixed;inset:0;z-index:2000;}
@@ -872,7 +873,7 @@ select.input{cursor:pointer;}
   <!-- ══ REPORTS PAGE ══ -->
   <div class="page" id="page-reports">
     <!-- Team View banner -->
-    <div id="teamViewBannerReports" style="display:none;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:var(--r);padding:10px 16px;margin-bottom:16px;display:none;align-items:center;gap:12px;">
+    <div id="teamViewBannerReports" style="display:none;background:rgba(6,182,212,0.08);border:1px solid rgba(6,182,212,0.3);border-radius:var(--r);padding:10px 16px;margin-bottom:16px;align-items:center;gap:12px;">
       <span style="font-size:0.82rem;color:var(--cyan);">👁 Viewing: <strong id="teamViewLabelReports">—</strong></span>
       <span style="font-size:0.75rem;color:var(--text3);">Read-only view</span>
       <button class="btn btn-ghost" style="margin-right:auto;padding:4px 10px;font-size:0.75rem;" onclick="setViewingUser(null)">← Back to My Data</button>
@@ -2250,9 +2251,45 @@ function accessibleUsernames() {
   return [CU.username];
 }
 
-// Get courses for a specific user
+// Get courses for a specific user — multi-group aware (all groups merged)
 function loadUserCourses(username) {
-  return loadPersonal(username).courses || {};
+  const p = loadPersonal(username);
+  // إذا وُجدت مجموعات، نجمع المواد من كلها
+  if (p.groups && Object.keys(p.groups).length > 0) {
+    const merged = {};
+    Object.values(p.groups).forEach(g => {
+      Object.assign(merged, g.courses || {});
+    });
+    return merged;
+  }
+  return p.courses || {};
+}
+
+// Get ALL courses for a user across all groups (returns array with groupId)
+function getAllCoursesForUser(username) {
+  const p = loadPersonal(username);
+  const result = [];
+  if (p.groups && Object.keys(p.groups).length > 0) {
+    Object.entries(p.groups).forEach(([gid, g]) => {
+      Object.values(g.courses || {}).forEach(c => {
+        result.push({ ...c, _groupId: gid });
+      });
+    });
+  } else {
+    Object.values(p.courses || {}).forEach(c => result.push(c));
+  }
+  return result;
+}
+
+// Get a specific course for a user across all groups
+function getCourseForUser(username, courseCode) {
+  const p = loadPersonal(username);
+  if (p.groups && Object.keys(p.groups).length > 0) {
+    for (const g of Object.values(p.groups)) {
+      if (g.courses && g.courses[courseCode]) return g.courses[courseCode];
+    }
+  }
+  return p.courses ? p.courses[courseCode] : null;
 }
 
 // Resolve a potentially-prefixed course key to {owner, key}
@@ -2528,7 +2565,6 @@ function showPage(id) {
   if (id==='analytics')  renderAnalytics();
   if (id==='setup')      renderSetup();
   if (id==='students')   renderStudentsPage();
-  if (id==='staff')      renderStaffPage();
   if (id==='staff')      renderStaffPage();
 }
 
@@ -4884,7 +4920,8 @@ function runExport() {
       });
     });
     const d=load();
-    Object.values(d.courses||{}).forEach(c=>{ (c.students||[]).forEach(stu=>{ if(abMap[stu.campusId]) abMap[stu.campusId].name=stu.name; }); });
+    // جمع أسماء الطلاب من كل المجموعات
+    getAllCoursesForUser(CU.username).forEach(c=>{ (c.students||[]).forEach(stu=>{ if(abMap[stu.campusId]) abMap[stu.campusId].name=stu.name; }); });
     const abRows = Object.entries(abMap).sort((a,b)=>b[1].count-a[1].count).map(([id,info])=>({
       'Campus ID': id,
       'اسم الطالب / Name': info.name!==id?info.name:'—',
@@ -5616,9 +5653,8 @@ function exportNoShowVersioned(version, scope) {
   const studentMap = {}; // campusId -> info
 
   for (const uname of accessUsers) {
-    const ud = loadPersonal(uname);
-    if (!ud) continue;
-    Object.values(ud.courses || {}).forEach(course => {
+    if (!uname) continue;
+    getAllCoursesForUser(uname).forEach(course => {
       (course.students || []).forEach(st => {
         if (!studentMap[st.campusId]) {
           studentMap[st.campusId] = {
@@ -5894,8 +5930,7 @@ function closeReportModal() {
 
 function exportStaffNoShow(username, courseCode) {
   const noShows = getNoShowStudents();
-  const p = loadPersonal(username);
-  const c = p.courses ? p.courses[courseCode] : null;
+  const c = getCourseForUser(username, courseCode);
   if (!c) return;
 
   const courseNoShows = noShows.filter(s =>
@@ -6068,8 +6103,7 @@ function renderStaffTree() {
 }
 
 function renderTreeNode(u, indent, icon, color) {
-  const p = loadPersonal(u.username);
-  const courses = Object.values(p.courses || {});
+  const courses = getAllCoursesForUser(u.username);
   const group = courses.length > 0 ? (courses[0].code.match(/^[A-Z]+/)?.[0] || '') : '';
   const courseList = courses.map(c => c.code).join(', ') || '—';
   const isSelected = _selectedStaff === u.username;
@@ -6106,7 +6140,7 @@ function selectStaffMember(username) {
   if (!u) return;
 
   const p = loadPersonal(username);
-  const courses = Object.values(p.courses || {});
+  const courses = getAllCoursesForUser(username);
 
   // Header
   document.getElementById('staffMemberAvatar').textContent = username[0].toUpperCase();
@@ -6225,7 +6259,8 @@ function selectStaffMember(username) {
 function getNoShowForUser(username) {
   const p = loadPersonal(username);
   const studentMap = {};
-  Object.values(p.courses || {}).forEach(c => {
+  // جمع الطلاب من كل المجموعات
+  getAllCoursesForUser(username).forEach(c => {
     (c.students||[]).forEach(s => {
       if (!studentMap[s.campusId]) studentMap[s.campusId] = { name:s.name, campusId:s.campusId, seen:false };
     });
@@ -6240,8 +6275,7 @@ function getNoShowForUser(username) {
 }
 
 function exportStaffSheet(username, courseCode, type) {
-  const p = loadPersonal(username);
-  const c = p.courses ? p.courses[courseCode] : null;
+  const c = getCourseForUser(username, courseCode);
   if (!c) { alert('Course not found.'); return; }
 
   const TYPE_LABELS = { attendance:'Attendance Sheet', monthly:'Monthly Exam', final:'Final Exam' };
@@ -6272,8 +6306,7 @@ function showExportOptionsModal(c, label, username, courseCode, type) {
 }
 
 function doExportStaffSheet(username, courseCode, type, format) {
-  const p = loadPersonal(username);
-  const c = p.courses ? p.courses[courseCode] : null;
+  const c = getCourseForUser(username, courseCode);
   if (!c) return;
 
   const TYPE_LABELS = { attendance:'Attendance Sheet', monthly:'Monthly Exam Sheet', final:'Final Exam Sheet' };
@@ -6334,7 +6367,7 @@ function openTeamView() {
     list.innerHTML = accessible.map(username => {
       const u = shared.users.find(x=>x.username===username);
       const p = loadPersonal(username);
-      const courseCount = Object.keys(p.courses||{}).length;
+      const courseCount = getAllCoursesForUser(username).length;
       const isViewing = _viewingUser === username;
       return `<div style="display:flex;align-items:center;gap:10px;padding:10px 12px;
         background:${isViewing?'rgba(6,182,212,0.1)':'var(--surface2)'};
